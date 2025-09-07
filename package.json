@@ -1,5 +1,7 @@
 {
-  "name": "my-v0-project",
+  "name": "ai-solutions-lab",
+  "author": "Edward Lampoh",
+  "repository": "https://github.com/edielam/ai-solutions-lab.git",
   "version": "0.1.0",
   "private": true,
   "scripts": {
