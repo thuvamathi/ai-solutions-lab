@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { sql } from "@vercel/postgres"
+import { neon } from "@neondatabase/serverless"
+
+const sql = neon(process.env.DATABASE_URL!)
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -24,7 +26,7 @@ export async function DELETE(request: NextRequest) {
 
     let totalDeleted = 0
 
-    for (const group of duplicates.rows) {
+    for (const group of duplicates) {
       const ids = group.ids as string[]
       // Keep the first appointment (oldest) and delete the rest
       const idsToDelete = ids.slice(1)
@@ -40,7 +42,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ 
       message: `Cleanup completed. Removed ${totalDeleted} duplicate appointments.`,
-      duplicateGroups: duplicates.rows.length,
+      duplicateGroups: duplicates.length,
       appointmentsDeleted: totalDeleted
     })
 

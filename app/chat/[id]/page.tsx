@@ -10,6 +10,7 @@ import { MessageSquare, Send, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useChat } from "ai/react"
 import { AppointmentBooking } from "@/components/appointments/appointment-booking"
+import { getRemainingMessages, incrementMessageCount, MAX_FREE_MESSAGES } from '@/lib/rate-limit';
 
 interface AssistantResponse {
   message: string
@@ -118,6 +119,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Array<{id: string, role: 'user' | 'assistant', content: string}>>([])
   const [input, setInput] = useState('')
   const [isChatLoading, setIsChatLoading] = useState(false)
+  const [remainingMessages, setRemainingMessages] = useState(MAX_FREE_MESSAGES);
 
   // Add initial greeting when business data is loaded
   useEffect(() => {
@@ -130,9 +132,30 @@ export default function ChatPage() {
     }
   }, [businessData])
 
+  useEffect(() => {
+    if (businessId) {
+      setRemainingMessages(getRemainingMessages(businessId));
+    }
+  }, [businessId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || !conversationId || isChatLoading) return
+
+    // Check remaining messages
+    if (remainingMessages <= 0) {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: JSON.stringify({
+          message: "You've reached the limit for free messages. Please sign up to continue chatting.",
+          type: "text",
+          intent: "general",
+          suggested_actions: ["Sign up now", "Learn more about pricing"]
+        })
+      }]);
+      return;
+    }
 
     const userMessage = {
       id: Date.now().toString(),
@@ -149,7 +172,10 @@ export default function ChatPage() {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Message-Count': (MAX_FREE_MESSAGES - remainingMessages).toString()
+        },
         body: JSON.stringify({
           messages: [...messages, userMessage],
           businessId,
@@ -168,6 +194,10 @@ export default function ChatPage() {
         }
         
         setMessages(prev => [...prev, aiMessage])
+
+        // Increment message count and update remaining
+        incrementMessageCount(businessId);
+        setRemainingMessages(prev => prev - 1);
       } else {
         console.error('Chat API error:', response.status)
         // Add error message
@@ -298,7 +328,10 @@ export default function ChatPage() {
       // Send API request with current messages plus the new action message
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Message-Count': (MAX_FREE_MESSAGES - remainingMessages).toString()
+        },
         body: JSON.stringify({
           messages: [...messages, userMessage],
           businessId,
@@ -576,7 +609,7 @@ export default function ChatPage() {
                           onChange={handleInputChange}
                           placeholder={`Ask ${businessData.name} anything...`}
                           className="w-full px-4 py-3 pr-12 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400"
-                          style={{ focusRingColor: businessData.primary_color }}
+                          style={{ '--tw-ring-color': businessData.primary_color } as React.CSSProperties}
                         />
                       </div>
                       <Button
@@ -596,6 +629,13 @@ export default function ChatPage() {
                           <Send className="h-4 w-4" />
                         )}
                       </Button>
+
+                      {/* Add message counter */}
+                      <div className="absolute right-20 top-1/2 -translate-y-1/2 px-3 py-1 bg-gray-100 rounded-full">
+                        <span className="text-xs text-gray-500">
+                          {remainingMessages} / {MAX_FREE_MESSAGES} messages left
+                        </span>
+                      </div>
                     </div>
                   </form>
                   
@@ -614,6 +654,17 @@ export default function ChatPage() {
                       End Chat
                     </Button>
                   </div>
+
+                  {remainingMessages === 0 && (
+                    <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <p className="text-sm text-amber-800">
+                        You've reached the limit for free messages. 
+                        <Link href="/signup" className="ml-2 font-medium underline">
+                          Sign up now
+                        </Link> to continue chatting.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (

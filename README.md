@@ -53,39 +53,6 @@ Visit `http://localhost:3000` to see the complete application with:
 - AI chat interface with appointment booking
 - Document upload and processing
 
-## 📁 Codebase Overview
-
-### **Frontend Application** (`app/` & `components/`)
-- **Landing Page** (`app/page.tsx`) - Marketing site with pricing and features
-- **Setup Wizard** (`app/setup/page.tsx`) - 3-step business onboarding
-- **Chat Interface** (`app/chat/[id]/page.tsx`) - Personalized AI receptionist per business
-- **UI Components** (`components/`) - Chat system, appointment booking, document upload
-<!-- - **Type Definitions** (`lib/types.ts`) - Database models and interfaces
-- **Mock Data** (`lib/storage.ts`) - Local storage system for development -->
-
-
-### **MLOps Service** (To be built in labs)
-- **Flask service** for metrics tracking
-- **MLflow integration** for AI performance monitoring
-- **Real-time analytics** for conversation success rates
-
-## 🎓 Learning Journey
-
-This lab covers **12 progressive modules**:
-
-1. **Environment Setup** - Get everything running locally
-2. **AI & MLOps Integration** - Real Gemini API + tracking with MLflow
-3. **Testing AI Systems** - pytest for AI components
-4. **CI/CD Pipelines** - GitHub Actions automation
-5. **Containerization** - Docker for MLOps service
-6. **Kubernetes** - Orchestration and scaling
-7. **Cloud Deployment** - AWS/GCP production deployment  
-8. **Serverless** - Lambda/Cloud Functions conversion
-9. **Monitoring** - Essential metrics and alerting
-10. **Security** - Authentication and compliance
-11. **Performance Analysis** - Load testing and optimization
-12. **Final Project** - Complete system demonstration
-
 ## 🔍 Key Features to Explore
 
 ### **Free Trial Experience**
