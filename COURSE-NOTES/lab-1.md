@@ -1,483 +1,318 @@
-# Lab 1: Introduction & Setup
+# Lab 1: Environment Setup & Project Introduction
 
-**Objective:** Set up development environment and understand the project architecture
-
-**Time Required:** 2-3 hours
-
-**What You'll Learn:**
-- Git and GitHub fundamentals
-- Setting up development tools
-- Understanding project structure
-- Running the application locally
+**Time Required:** 2-3 hours  
+**Objective:** Set up all required accounts and development tools, then run the complete application locally
 
 ---
 
-## Part 1: Installing Required Software
+## 📋 Lab 1 Checklist
 
-### 1.1 Install Git
+### **Part A: Account Setup**
+- [ ] Create GitHub account and configure Git
+- [ ] Sign up for Google Cloud and get Gemini API key
+- [ ] Create AWS account (free tier)
+- [ ] Sign up for Neon database and create project
+- [ ] Sign up for Resend email service
 
-**What is Git?** Git is a version control system that tracks changes in your code and allows collaboration.
+### **Part B: Development Tools**
+- [ ] Install Node.js and npm/pnpm
+- [ ] Install Python 3.9+
+- [ ] Install Git
+- [ ] Install code editor (VS Code recommended)
 
-#### Windows:
-1. Go to [https://git-scm.com/download/windows](https://git-scm.com/download/windows)
-2. Download the installer
-3. Run the installer with default settings
-4. Open Command Prompt or PowerShell and verify: `git --version`
+### **Part C: Project Setup**
+- [ ] Fork and clone repository
+- [ ] Install dependencies
+- [ ] Configure environment variables
+- [ ] Run application locally
+- [ ] Test complete free trial flow
 
-#### macOS:
-1. Open Terminal (press `Cmd + Space`, type "Terminal", press Enter)
-2. Type: `git --version`
-3. If not installed, it will prompt you to install Xcode Command Line Tools - click "Install"
-4. Or install via Homebrew: `brew install git`
-
-#### Linux (Ubuntu/Debian):
-```bash
-sudo apt update
-sudo apt install git
-```
-
-**Verify Installation:**
-```bash
-git --version
-# Should show something like: git version 2.x.x
-```
-
-### 1.2 Install Node.js
-
-**What is Node.js?** A JavaScript runtime that allows running JavaScript outside the browser, needed for our frontend.
-
-1. Go to [https://nodejs.org](https://nodejs.org)
-2. Download the **LTS version** (recommended for most users)
-3. Run the installer with default settings
-4. Restart your terminal/command prompt
-
-**Verify Installation:**
-```bash
-node --version
-# Should show: v18.x.x or v20.x.x
-
-npm --version  
-# Should show: 9.x.x or 10.x.x
-```
-
-### 1.3 Install Python
-
-**What is Python?** Programming language we'll use for the backend AI processing.
-
-#### Windows:
-1. Go to [https://python.org/downloads](https://python.org/downloads)
-2. Download Python 3.9 or newer
-3. **Important:** Check "Add Python to PATH" during installation
-4. Verify in Command Prompt: `python --version`
-
-#### macOS:
-```bash
-# Using Homebrew (recommended)
-brew install python@3.9
-
-# Or download from python.org
-```
-
-#### Linux:
-```bash
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
-```
-
-**Verify Installation:**
-```bash
-python --version
-# or
-python3 --version
-# Should show: Python 3.9.x or newer
-
-pip --version
-# or  
-pip3 --version
-# Should show pip version
-```
-
-### 1.4 Install Docker
-
-**What is Docker?** Containerization platform that packages applications with their dependencies.
-
-1. Go to [https://docker.com/get-started](https://docker.com/get-started)
-2. Download Docker Desktop for your operating system
-3. Install and start Docker Desktop
-4. Create a Docker account if prompted
-
-**Verify Installation:**
-```bash
-docker --version
-# Should show: Docker version 20.x.x or newer
-
-docker run hello-world
-# Should download and run a test container successfully
-```
-
-### 1.5 Install a Code Editor
-
-**Recommended:** Visual Studio Code (free)
-
-1. Go to [https://code.visualstudio.com](https://code.visualstudio.com)
-2. Download and install
-3. Install helpful extensions:
-   - Python (by Microsoft)
-   - JavaScript ES6 code snippets
-   - Prettier - Code formatter
-   - GitLens
+### **Part D: Optional (Can be done later)**
+- [ ] Install Docker Desktop
 
 ---
 
-## Part 2: Setting Up GitHub
+## Part A: Account Setup
 
-### 2.1 Create GitHub Account
+### 1. GitHub Setup
 
-1. Go to [https://github.com](https://github.com)
-2. Click "Sign up"
-3. Choose a username (this will be public)
-4. Use your student email if available (for education benefits)
-5. Verify your email address
+**Create Account:**
+1. Go to [github.com](https://github.com) and sign up
+2. Use your student email if available
+3. Choose a professional username
 
-### 2.2 Configure Git Locally
-
-**Set up your identity:**
+**Configure Git:**
 ```bash
 git config --global user.name "Your Full Name"
 git config --global user.email "your.email@example.com"
 ```
 
-**Check your configuration:**
+### 2. Google Cloud Platform
+
+**Sign Up:**
+1. Go to [console.cloud.google.com](https://console.cloud.google.com)
+2. Sign up with your Google account
+3. Accept free tier ($300 credit)
+
+**Get Gemini API Key:**
+1. Create new project or use default
+2. Enable Gemini API
+3. Go to "Credentials" → "Create API Key"
+4. **Save this key** - you'll need it later
+
+### 3. AWS Account
+
+**Sign Up:**
+1. Go to [aws.amazon.com](https://aws.amazon.com)
+2. Create free tier account
+3. Verify phone number and payment method
+4. Choose "Basic Support - Free"
+
+**Note:** We'll use AWS later in the course for deployment
+
+### 4. Neon Database
+
+**Sign Up:**
+1. Go to [neon.tech](https://neon.tech)
+2. Sign up with GitHub (recommended)
+3. Create new project: "ai-receptionist-lab"
+4. **Save the connection string** - you'll need it
+
+### 5. Resend Email Service
+
+**Sign Up:**
+1. Go to [resend.com](https://resend.com)
+2. Sign up for free account
+3. Get API key from dashboard
+4. **Save this key** - you'll need it later
+
+---
+
+## Part B: Install Development Tools
+
+### Node.js Installation
+
+**All Platforms:**
+1. Go to [nodejs.org](https://nodejs.org)
+2. Download **LTS version** (v18 or v20)
+3. Install with default settings
+
+**Verify:**
 ```bash
-git config --list
-# Should show your name and email
+node --version
+npm --version
 ```
 
-### 2.3 Set Up SSH Keys (Recommended)
+### Python Installation
 
-**Why SSH?** Secure way to authenticate with GitHub without typing passwords.
-
-**Generate SSH Key:**
-```bash
-ssh-keygen -t ed25519 -C "your.email@example.com"
-# Press Enter for default location
-# Press Enter for empty passphrase (or create one if you prefer)
-```
-
-**Add SSH Key to ssh-agent:**
-
-**Windows (Git Bash):**
-```bash
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-```
+**Windows:**
+1. Go to [python.org/downloads](https://python.org/downloads)
+2. Download Python 3.9 or newer
+3. **Check "Add Python to PATH"** during installation
 
 **macOS:**
 ```bash
-eval "$(ssh-agent -s)"
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+brew install python@3.9
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install python3 python3-pip python3-venv
+```
+
+**Verify:**
+```bash
+python --version  # or python3 --version
+pip --version      # or pip3 --version
+```
+
+### Git Installation
+
+**Windows:**
+1. Download from [git-scm.com](https://git-scm.com)
+2. Install with default settings
+
+**macOS:**
+```bash
+# Git usually comes pre-installed, if not:
+brew install git
 ```
 
 **Linux:**
 ```bash
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
+sudo apt install git
 ```
 
-**Copy Your Public Key:**
+**Verify:**
 ```bash
-cat ~/.ssh/id_ed25519.pub
-# Copy the entire output
+git --version
 ```
 
-**Add to GitHub:**
-1. Go to GitHub.com → Settings → SSH and GPG keys
-2. Click "New SSH key"
-3. Paste your public key
-4. Click "Add SSH key"
+### Code Editor (Recommended)
 
-**Test Connection:**
-```bash
-ssh -T git@github.com
-# Should say: "Hi username! You've successfully authenticated"
-```
+**Visual Studio Code:**
+1. Download from [code.visualstudio.com](https://code.visualstudio.com)
+2. Install helpful extensions:
+   - Python
+   - JavaScript ES6 code snippets
+   - Prettier - Code formatter
 
 ---
 
-## Part 3: Setting Up the Project
+## Part C: Project Setup
 
-### 3.1 Fork the Repository
+### 1. Fork Repository
 
-1. Go to the lab repository on GitHub (your instructor will provide the link)
-2. Click the "Fork" button in the top right
-3. This creates your own copy of the repository
+1. Go to the lab repository (instructor will provide link)
+2. Click "Fork" button
+3. This creates your personal copy
 
-### 3.2 Clone Your Fork
+### 2. Clone Your Fork
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/ai-appointment-setter-lab.git
 cd ai-appointment-setter-lab
 ```
 
-**What just happened?** You downloaded the project files to your computer.
+### 3. Install Dependencies
 
-### 3.3 Explore the Project Structure
-
+**Frontend (Next.js):**
 ```bash
-# List all files and folders
-ls -la
-# or on Windows:
-dir
-
-# Look at the main folders
-tree
-# or manually explore each folder
-```
-
-**Key folders:**
-- `app/` - Frontend pages (Next.js)
-- `components/` - Reusable UI components
-- `lib/` - Utility functions and types
-- `COURSE-NOTES/` - Lab instructions (you're reading one now!)
-
----
-
-## Part 4: Running the Application
-
-### 4.1 Install Frontend Dependencies
-
-```bash
-# Make sure you're in the project directory
-pwd
-# Should show: .../ai-appointment-setter-lab
-
-# Install Node.js packages
 npm install
-# This downloads all required packages (may take a few minutes)
+# or if you prefer pnpm:
+pnpm install
 ```
 
-**What's happening?** npm is reading `package.json` and downloading all the libraries our frontend needs.
+**Backend (Python):**
+```bash
+# Create virtual environment
+python -m venv venv
 
-### 4.2 Start the Development Server
+# Activate it
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
 
+# Install packages
+pip install -r requirements.txt
+```
+
+### 4. Environment Configuration
+
+Create `.env` file in the root directory:
+
+```env
+# Database (from Neon)
+DATABASE_URL=your_neon_connection_string_here
+
+# AI API (from Google Cloud)
+GOOGLE_API_KEY=your_gemini_api_key_here
+
+# Email Service (from Resend)
+RESEND_API_KEY=your_resend_api_key_here
+
+# App Settings
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+SECRET_KEY=change_this_to_something_secure
+DEBUG=true
+```
+
+### 5. Run the Application
+
+**Start Frontend:**
 ```bash
 npm run dev
 ```
 
-**Expected Output:**
-```
-> next dev
-> ✓ Ready on http://localhost:3000
-```
+**Open Browser:**
+Go to [http://localhost:3000](http://localhost:3000)
 
-### 4.3 View the Application
+### 6. Test the Free Trial Flow
 
-1. Open your web browser
-2. Go to [http://localhost:3000](http://localhost:3000)
-3. You should see the AI Appointment Setter landing page
-
-**Try the Free Trial Flow:**
-1. Click "TRY IT FREE - NO SIGNUP"
-2. Fill out the business setup form
-3. Upload a document or skip
-4. See your generated chat URL
-5. Try the chat interface
-
-### 4.4 Set Up Python Environment
-
-**Open a new terminal** (keep the first one running npm)
-
-```bash
-# Navigate to project directory
-cd ai-appointment-setter-lab
-
-# Create virtual environment
-python -m venv venv
-# or on some systems:
-python3 -m venv venv
-```
-
-**Activate Virtual Environment:**
-
-**Windows:**
-```bash
-venv\Scripts\activate
-```
-
-**macOS/Linux:**
-```bash
-source venv/bin/activate
-```
-
-**You should see `(venv)` at the beginning of your command prompt.**
-
-**Install Python Dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-### 4.5 Set Up Environment Variables
-
-**Create `.env` file** in your project root:
-
-```bash
-# Create the file
-touch .env
-# or on Windows:
-type nul > .env
-```
-
-**Edit `.env` file** (use your code editor):
-```env
-# Database
-DATABASE_URL=postgresql://localhost/ai_receptionist_dev
-
-# AI Services (we'll get these in later labs)
-GOOGLE_API_KEY=your_gemini_api_key_here
-
-# Email Service (we'll get these in later labs)
-SENDGRID_API_KEY=your_sendgrid_key_here
-SENDGRID_FROM_EMAIL=noreply@yourdomain.com
-
-# App Configuration
-SECRET_KEY=your_secret_key_here_change_this
-DEBUG=True
-```
+1. **Landing Page**: Click "TRY IT FREE - NO SIGNUP"
+2. **Business Setup**: 
+   - Enter business name and description
+   - Choose a brand color
+   - Click "Continue to Documents"
+3. **Document Upload**: 
+   - Skip for now or upload a sample document
+   - Click "Continue"
+4. **Generated URL**: 
+   - Copy your unique chat URL
+   - Click "Try Your AI Receptionist"
+5. **Chat Interface**: 
+   - Test asking questions
+   - Try booking an appointment
+   - Verify emails are sent (check spam folder)
 
 ---
 
-## Part 5: Understanding Git Workflow
+## Part D: Docker Setup (Optional - Can Skip for Now)
 
-### 5.1 Basic Git Commands
+**Install Docker Desktop:**
+1. Go to [docker.com/get-started](https://docker.com/get-started)
+2. Download for your OS
+3. Install and start Docker Desktop
 
-**Check status:**
+**Verify:**
 ```bash
-git status
-# Shows which files have been modified
+docker --version
+docker run hello-world
 ```
 
-**Add files to staging:**
-```bash
-git add .
-# Adds all modified files
-
-git add filename.txt
-# Adds specific file
-```
-
-**Commit changes:**
-```bash
-git commit -m "Describe what you changed"
-# Example: git commit -m "Complete Lab 1 setup"
-```
-
-**Push to GitHub:**
-```bash
-git push origin main
-# Uploads your changes to GitHub
-```
-
-### 5.2 Create a Branch for Lab 1
-
-```bash
-# Create and switch to new branch
-git checkout -b lab-1-setup
-
-# Make some changes (create a file to test)
-echo "Lab 1 completed!" > lab1-notes.txt
-
-# Add and commit
-git add .
-git commit -m "Add Lab 1 completion notes"
-
-# Push branch to GitHub
-git push origin lab-1-setup
-```
+**Note:** We'll use Docker in Lab 5 for containerization
 
 ---
 
-## Part 6: Verification & Troubleshooting
+## ✅ Verification Checklist
 
-### 6.1 Verify Everything is Working
+Before moving to Lab 2, ensure:
 
-**Checklist:**
-- [ ] Frontend runs at http://localhost:3000
-- [ ] You can navigate through the setup wizard
-- [ ] Chat interface loads
-- [ ] Python virtual environment activates
-- [ ] Git commands work
-- [ ] You can push to GitHub
-
-### 6.2 Common Issues
-
-**"npm: command not found"**
-- Node.js not installed correctly
-- Restart terminal after installation
-
-**"python: command not found"**
-- Try `python3` instead
-- Check Python PATH installation
-
-**"Permission denied (publickey)"**
-- SSH key not set up correctly
-- Use HTTPS clone instead
-
-**Frontend not loading:**
-- Check for error messages in terminal
-- Try `npm install` again
-- Ensure you're on http://localhost:3000
-
-**Port already in use:**
-```bash
-# Kill process using port 3000
-npx kill-port 3000
-# Then restart: npm run dev
-```
+- [ ] All accounts created with API keys saved
+- [ ] Application runs at http://localhost:3000
+- [ ] Free trial flow works end-to-end
+- [ ] Chat interface responds to messages
+- [ ] Appointment booking flow functions
+- [ ] Environment variables configured correctly
+- [ ] Git setup complete with your fork
 
 ---
 
-## 🎯 Lab 1 Deliverables
+## 🚨 Troubleshooting
 
-1. **Repository Setup:**
-   - Forked repository
-   - Cloned to local machine
-   - Created lab-1-setup branch
+**"npm install" fails:**
+- Try deleting `node_modules` and `package-lock.json`, then run `npm install` again
 
-2. **Running Application:**
-   - Frontend accessible at localhost:3000
-   - Successfully tested free trial flow
-   - Python environment activated
+**Python virtual environment issues:**
+- Make sure you're in the project directory
+- Try `python3 -m venv venv` instead of `python -m venv venv`
 
-3. **Development Environment:**
-   - All required software installed
-   - Git configured with your identity
-   - SSH keys set up (optional but recommended)
+**Database connection errors:**
+- Verify your Neon connection string is correct
+- Make sure there are no extra spaces in `.env` file
 
-4. **Documentation:**
-   - Created `.env` file with placeholder values
-   - Added lab1-notes.txt with your observations
-   - Committed changes to your branch
+**API key not working:**
+- Double-check the key is copied correctly
+- Verify the API is enabled in Google Cloud Console
 
 ---
 
-## 🚀 Next Steps
+## 📚 Next Steps
 
-1. **Explore the Code:**
-   - Open project in VS Code
-   - Look at `app/page.tsx` (landing page)
-   - Check `app/setup/page.tsx` (setup wizard)
-   - Explore `components/chat/` folder
+**Prepare for Lab 2:**
+- Keep all your API keys handy
+- Familiarize yourself with the chat interface
+- Try uploading different business documents
+- Think about how the AI decides when to book appointments
 
-2. **Prepare for Lab 2:**
-   - Sign up for Google Cloud (free tier)
-   - Review Gemini API documentation
-   - Read about MLflow basics
+**Ready for Lab 2?** You'll integrate real AI capabilities and start tracking performance with MLflow!
 
-3. **Optional Enhancements:**
-   - Customize the landing page with your name
-   - Try the document upload feature
-   - Test different business scenarios
+---
 
-**Questions?** Document any issues you encountered and bring them to the next lab session.
+## 💡 Pro Tips
 
-**Ready for Lab 2?** You'll integrate real AI capabilities with the Gemini API and start tracking with MLflow!
+- **Save your API keys securely** - never commit them to Git
+- **Use meaningful commit messages** when pushing code
+- **Test thoroughly** - the free trial flow is what your users will experience
