@@ -164,15 +164,22 @@ git --version
 
 ### 1. Fork Repository
 
-1. Go to the lab repository (instructor will provide link)
-2. Click "Fork" button
-3. This creates your personal copy
+**Why Fork?** You'll be making changes throughout the course and need your own copy to work with.
+
+1. Go to the lab repository: https://github.com/edielam/ai-solutions-lab
+2. Click the **"Fork"** button in the top-right corner
+3. This creates your personal copy at `https://github.com/YOUR_USERNAME/ai-solutions-lab`
+4. You now have full control over your version of the code
+5. **Throughout the course:** All commits and changes go to YOUR fork, not the original repo
 
 ### 2. Clone Your Fork
 
+**Important:** Clone YOUR fork, not the original repository!
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/ai-appointment-setter-lab.git
-cd ai-appointment-setter-lab
+# Clone YOUR fork (replace YOUR_USERNAME with your actual GitHub username)
+git clone https://github.com/YOUR_USERNAME/ai-solutions-lab.git
+cd ai-solutions-lab
 ```
 
 ### 3. Install Dependencies
@@ -208,7 +215,7 @@ Create `.env` file in the root directory:
 DATABASE_URL=your_neon_connection_string_here
 
 # AI API (from Google Cloud)
-GOOGLE_API_KEY=your_gemini_api_key_here
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key_here
 
 # Email Service (from Resend)
 RESEND_API_KEY=your_resend_api_key_here

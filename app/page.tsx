@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { MessageSquare, Calendar, Clock, Users, Zap, Shield, Check, Star } from "lucide-react"
 import Link from "next/link"
 import { EnhancedChatWidget } from "@/components/chat/enhanced-chat-widget"
+import Image from "next/image"
 
 export default function HomePage() {
   return (
@@ -29,13 +30,23 @@ export default function HomePage() {
       </header>
 
       <main className="relative px-6 pt-12">
-        {/* Original gradient blob */}
+        {/* Hero background image */}
         <div
-          className="absolute right-0 top-0 h-[300px] w-[300px] animate-pulse rounded-full bg-gradient-to-br from-pink-400 via-orange-300 to-yellow-200 opacity-70 blur-3xl"
+          className="absolute right-0 top-0 w-2/3 h-[800px] pr-12"
           aria-hidden="true"
-        />
+        >
+          <div className="relative w-full h-full opacity-90">
+            <Image 
+              src="/chat2.png" 
+              alt="receptionist"
+              fill
+              className="object-contain object-right"
+              priority
+            />
+          </div>
+        </div>
 
-        <div className="relative">
+        <div className="relative z-10">
           <h1 className="max-w-3xl text-6xl font-light leading-tight tracking-tight text-black">
             YOUR SMART
             <br />

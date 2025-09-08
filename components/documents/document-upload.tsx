@@ -18,10 +18,11 @@ interface UploadedFile {
 }
 
 interface DocumentUploadProps {
+  businessId: string
   onUploadComplete?: (files: UploadedFile[]) => void
 }
 
-export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
+export function DocumentUpload({ businessId, onUploadComplete }: DocumentUploadProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -33,35 +34,65 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
     }))
 
     setUploadedFiles((prev) => [...prev, ...newFiles])
-
-    // Simulate file upload and processing
+    
+    // Upload files to database
     newFiles.forEach((uploadedFile) => {
-      simulateUpload(uploadedFile.id)
+      uploadFile(uploadedFile.id, uploadedFile.file)
     })
-  }, [])
+  }, [businessId])
 
-  const simulateUpload = (fileId: string) => {
-    const updateProgress = (progress: number, status: UploadedFile["status"]) => {
-      setUploadedFiles((prev) => prev.map((file) => (file.id === fileId ? { ...file, progress, status } : file)))
+  const uploadFile = async (fileId: string, file: File) => {
+    const updateProgress = (progress: number, status: UploadedFile["status"], error?: string) => {
+      setUploadedFiles((prev) =>
+        prev.map((file) => (file.id === fileId ? { ...file, progress, status, error } : file))
+      )
     }
 
-    // Simulate upload progress
-    let progress = 0
-    const uploadInterval = setInterval(() => {
-      progress += Math.random() * 20
-      if (progress >= 100) {
-        clearInterval(uploadInterval)
-        updateProgress(100, "processing")
+    try {
+      if (!file) return
 
-        // Simulate processing
+      updateProgress(0, "uploading")
+
+      // Read file content
+      const content = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = reject
+        reader.readAsText(file)
+      })
+
+      updateProgress(50, "uploading")
+
+      // Upload to database
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          business_id: businessId,
+          name: file.name,
+          type: file.type,
+          content: content,
+          size: file.size,
+        }),
+      })
+
+      updateProgress(90, "processing")
+
+      if (response.ok) {
+        updateProgress(100, "completed")
+        // Call onUploadComplete only for this specific file completion
         setTimeout(() => {
-          updateProgress(100, "completed")
-          onUploadComplete?.(uploadedFiles)
-        }, 2000)
+          onUploadComplete?.(uploadedFiles.filter((f) => f.status === "completed" || f.id === fileId))
+        }, 100)
       } else {
-        updateProgress(progress, "uploading")
+        const error = await response.text()
+        updateProgress(0, "error", error || "Upload failed")
       }
-    }, 200)
+    } catch (error) {
+      updateProgress(0, "error", error instanceof Error ? error.message : "Upload failed")
+    }
   }
 
   const removeFile = (fileId: string) => {

@@ -1,12 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { storage } from "@/lib/storage"
-import type { Conversation } from "@/lib/types"
+import { createConversation, getConversationsByBusiness } from "@/lib/database"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const conversations = storage.getConversations()
+    const { searchParams } = new URL(request.url)
+    const businessId = searchParams.get("business_id")
+
+    if (!businessId) {
+      return NextResponse.json({ error: "business_id is required" }, { status: 400 })
+    }
+
+    const conversations = await getConversationsByBusiness(businessId)
     return NextResponse.json(conversations)
   } catch (error) {
+    console.error("Error fetching conversations:", error)
     return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 })
   }
 }
@@ -15,17 +22,21 @@ export async function POST(request: NextRequest) {
   try {
     const conversationData = await request.json()
 
-    const conversation: Conversation = {
-      id: Date.now().toString(),
-      ...conversationData,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    if (!conversationData.business_id) {
+      return NextResponse.json({ error: "business_id is required" }, { status: 400 })
     }
 
-    storage.saveConversation(conversation)
+    const conversation = await createConversation({
+      business_id: conversationData.business_id,
+      customer_name: conversationData.customer_name,
+      customer_email: conversationData.customer_email,
+      customer_phone: conversationData.customer_phone,
+      status: conversationData.status || "active",
+    })
 
     return NextResponse.json(conversation, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: "Failed to save conversation" }, { status: 500 })
+    console.error("Error creating conversation:", error)
+    return NextResponse.json({ error: "Failed to create conversation" }, { status: 500 })
   }
 }

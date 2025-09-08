@@ -8,96 +8,194 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { MessageSquare, Send, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useChat } from "ai/react"
+import { AppointmentBooking } from "@/components/appointments/appointment-booking"
+
+interface AssistantResponse {
+  message: string
+  type: 'text' | 'appointment_booking' | 'human_handoff'
+  intent: 'general' | 'pricing' | 'services' | 'appointment' | 'contact'
+  suggested_actions?: string[]
+}
+
+type ChatMode = "chat" | "booking"
+
+function AssistantMessage({ content, onTriggerBooking }: { content: string, onTriggerBooking?: () => void }) {
+  try {
+    const response: AssistantResponse = JSON.parse(content)
+    
+    // Trigger booking mode if response type is appointment_booking
+    useEffect(() => {
+      if (response.type === 'appointment_booking' && onTriggerBooking) {
+        setTimeout(() => {
+          onTriggerBooking()
+        }, 1000) // Delay to let user read the message
+      }
+    }, [response.type, onTriggerBooking])
+    
+    return (
+      <div>
+        <p>{response.message}</p>
+        
+        {response.type === 'appointment_booking' && (
+          <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs text-blue-600 font-medium">📅 Opening calendar...</p>
+          </div>
+        )}
+        
+        {response.type === 'human_handoff' && (
+          <div className="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p className="text-xs text-yellow-600 font-medium">👋 Connect with our team</p>
+          </div>
+        )}
+        
+        {response.suggested_actions && response.suggested_actions.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {response.suggested_actions.map((action, i) => (
+              <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                {action}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  } catch (error) {
+    // Fallback for non-JSON responses
+    return <p>{content}</p>
+  }
+}
 
 interface BusinessData {
+  id: string
   name: string
   description: string
-  primaryColor: string
-  logo?: string
+  primary_color: string
+  logo_url?: string
 }
 
 interface Message {
   id: string
-  text: string
-  sender: "user" | "ai"
-  timestamp: Date
+  content: string
+  sender: "user" | "assistant"
+  created_at: string
 }
 
 export default function ChatPage() {
   const params = useParams()
-  const chatId = params.id as string
+  const businessId = params.id as string
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputValue, setInputValue] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
+  const [conversationId, setConversationId] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [mode, setMode] = useState<ChatMode>("chat")
+
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: '/api/chat',
+    body: {
+      businessId,
+      conversationId,
+    },
+    initialMessages: businessData ? [{
+      id: 'greeting',
+      role: 'assistant' as const,
+      content: `Hello! Welcome to ${businessData.name}. I'm your AI assistant and I'm here to help you with any questions about our services. How can I assist you today?`
+    }] : [],
+    onFinish: async (message) => {
+      // Store AI response in database
+      if (conversationId) {
+        await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            sender: "assistant",
+            content: message.content,
+            message_type: "text",
+          }),
+        })
+      }
+    }
+  })
+
+  const handleTriggerBooking = () => {
+    setMode("booking")
+  }
+
+  const handleBackToChat = () => {
+    setMode("chat")
+  }
+
+  const handleBookingComplete = () => {
+    setMode("chat")
+    // Add a confirmation message back to the chat
+    // This would need to be handled differently with useChat, but for now we'll just switch back
+  }
 
   useEffect(() => {
-    // Load business data from localStorage
-    const savedData = localStorage.getItem(`business_${chatId}`)
-    if (savedData) {
-      const data = JSON.parse(savedData)
-      setBusinessData(data)
+    let mounted = true
 
-      // Add welcome message
-      setMessages([
-        {
-          id: "welcome",
-          text: `Hello! I'm the AI assistant for ${data.name}. ${data.description} How can I help you today?`,
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ])
-    }
-  }, [chatId])
+    async function loadBusinessAndConversation() {
+      if (!mounted) return
+      
+      try {
+        // Load business data from database
+        const businessResponse = await fetch(`/api/businesses/${businessId}`)
+        if (businessResponse.ok && mounted) {
+          const business = await businessResponse.json()
+          setBusinessData(business)
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return
+          // Check for existing conversation in localStorage
+          const existingConversationId = localStorage.getItem(`conversation_${businessId}`)
+          
+          if (existingConversationId) {
+            // Verify the conversation still exists in database
+            const convResponse = await fetch(`/api/conversations?business_id=${businessId}`)
+            if (convResponse.ok) {
+              const conversations = await convResponse.json()
+              const activeConv = conversations.find((c: any) => c.id === existingConversationId && c.status === 'active')
+              
+              if (activeConv && mounted) {
+                setConversationId(activeConv.id)
+                setIsLoading(false)
+                return
+              }
+            }
+          }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputValue,
-      sender: "user",
-      timestamp: new Date(),
-    }
+          // Create new conversation if none exists or previous one is invalid
+          const conversationResponse = await fetch("/api/conversations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              business_id: businessId,
+              status: "active",
+            }),
+          })
 
-    setMessages((prev) => [...prev, userMessage])
-    setInputValue("")
-    setIsTyping(true)
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: generateAIResponse(inputValue, businessData),
-        sender: "ai",
-        timestamp: new Date(),
+          if (conversationResponse.ok && mounted) {
+            const conversation = await conversationResponse.json()
+            setConversationId(conversation.id)
+            localStorage.setItem(`conversation_${businessId}`, conversation.id)
+          }
+        }
+      } catch (error) {
+        console.error("Error loading business data:", error)
+      } finally {
+        if (mounted) {
+          setIsLoading(false)
+        }
       }
-      setMessages((prev) => [...prev, aiResponse])
-      setIsTyping(false)
-    }, 1500)
-  }
-
-  const generateAIResponse = (userInput: string, business: BusinessData | null): string => {
-    const input = userInput.toLowerCase()
-
-    if (input.includes("appointment") || input.includes("book") || input.includes("schedule")) {
-      return "I'd be happy to help you schedule an appointment! Let me connect you with our booking system. What type of service are you interested in?"
     }
 
-    if (input.includes("hours") || input.includes("open")) {
-      return "Our typical business hours are Monday through Friday, 9 AM to 6 PM. However, I'd recommend checking our current schedule when booking an appointment as hours may vary."
+    if (businessId) {
+      loadBusinessAndConversation()
     }
 
-    if (input.includes("price") || input.includes("cost") || input.includes("fee")) {
-      return "I'd be happy to discuss pricing with you! Our rates vary depending on the specific services you need. Would you like to schedule a consultation to get a personalized quote?"
+    return () => {
+      mounted = false
     }
+  }, [businessId])
 
-    if (input.includes("location") || input.includes("address")) {
-      return "For our exact location and directions, I'd recommend scheduling a consultation where we can provide you with detailed location information and any specific instructions."
-    }
-
-    return `Thank you for your question about ${business?.name || "our services"}! Based on the information I have, I'd recommend scheduling a consultation where our team can provide you with detailed, personalized answers. Would you like me to help you book an appointment?`
-  }
 
   if (!businessData) {
     return (
@@ -112,12 +210,12 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen bg-[#f8f8f8]">
       {/* Custom branded header */}
-      <header className="p-6 border-b border-gray-200" style={{ backgroundColor: `${businessData.primaryColor}15` }}>
+      <header className="p-6 border-b border-gray-200" style={{ backgroundColor: `${businessData.primary_color}15` }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-normal"
-              style={{ backgroundColor: businessData.primaryColor }}
+              style={{ backgroundColor: businessData.primary_color }}
             >
               {businessData.name.charAt(0)}
             </div>
@@ -127,7 +225,7 @@ export default function ChatPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Badge className="text-white" style={{ backgroundColor: businessData.primaryColor }}>
+            <Badge className="text-white" style={{ backgroundColor: businessData.primary_color }}>
               Online
             </Badge>
             <Link href="/" className="text-sm text-black hover:underline">
@@ -143,69 +241,76 @@ export default function ChatPage() {
         <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm h-[600px] flex flex-col">
           <CardHeader className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" style={{ color: businessData.primaryColor }} />
-              <span className="font-normal">Chat with {businessData.name}</span>
+              {mode === "booking" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBackToChat}
+                  className="mr-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              )}
+              <MessageSquare className="h-5 w-5" style={{ color: businessData.primary_color }} />
+              <span className="font-normal">
+                {mode === "booking" ? "Book Appointment" : `Chat with ${businessData.name}`}
+              </span>
             </div>
           </CardHeader>
 
           <CardContent className="flex-1 p-0 flex flex-col">
-            {/* Messages area */}
-            <div className="flex-1 p-6 overflow-y-auto space-y-4">
-              {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      message.sender === "user" ? "text-white" : "bg-gray-100 text-black"
-                    }`}
-                    style={message.sender === "user" ? { backgroundColor: businessData.primaryColor } : {}}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <p className={`text-xs mt-1 ${message.sender === "user" ? "text-white/70" : "text-gray-500"}`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 p-3 rounded-lg">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            {mode === "chat" ? (
+              <>
+                {/* Messages area */}
+                <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                  {messages.map((message) => (
+                    <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                       <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.1s" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
+                        className={`max-w-[80%] p-3 rounded-lg ${
+                          message.role === "user" ? "text-white" : "bg-gray-100 text-black"
+                        }`}
+                        style={message.role === "user" ? { backgroundColor: businessData.primary_color } : {}}
+                      >
+                        <div className="text-sm">
+                          {message.role === 'assistant' ? (
+                            <AssistantMessage content={message.content} onTriggerBooking={handleTriggerBooking} />
+                          ) : (
+                            <p>{message.content}</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              )}
-            </div>
 
-            {/* Input area */}
-            <div className="p-6 border-t border-gray-200">
-              <div className="flex gap-2">
-                <Input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={`Ask ${businessData.name} anything...`}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  className="flex-1 bg-white/50 border-gray-200"
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim()}
-                  className="text-white"
-                  style={{ backgroundColor: businessData.primaryColor }}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+                {/* Input area */}
+                <div className="p-6 border-t border-gray-200">
+                  <form onSubmit={handleSubmit} className="flex gap-2">
+                    <Input
+                      value={input}
+                      onChange={handleInputChange}
+                      placeholder={`Ask ${businessData.name} anything...`}
+                      className="flex-1 bg-white/50 border-gray-200"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={!input.trim()}
+                      className="text-white"
+                      style={{ backgroundColor: businessData.primary_color }}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Booking area */}
+                <div className="flex-1 p-6 overflow-y-auto">
+                  <AppointmentBooking onClose={handleBookingComplete} />
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

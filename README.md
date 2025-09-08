@@ -36,9 +36,11 @@ Flask MLOps Service → MLflow
 ### For Complete Setup Instructions
 📖 **[Follow Lab 1 Setup Guide](COURSE-NOTES/lab-1.md)** - includes account creation, tool installation, and environment configuration.
 
-### Quick Clone (if you already have Git/GitHub ready)
+### Quick Fork & Clone (if you already have Git/GitHub ready)
 ```bash
-git clone https://github.com/edielam/ai-solutions-lab.git
+# 1. Fork the repository on GitHub first (creates your own copy)
+# 2. Clone YOUR fork (replace YOUR_USERNAME with your GitHub username)
+git clone https://github.com/YOUR_USERNAME/ai-solutions-lab.git
 cd ai-solutions-lab
 npm install
 npm run dev
