@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { sql } from "@vercel/postgres"
+import { neon } from "@neondatabase/serverless"
 import { createAppointment, getAppointmentsByBusiness, getAppointmentsByConversation, updateAppointment } from "@/lib/database"
+
+const sql = neon(process.env.DATABASE_URL!)
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,10 +46,10 @@ export async function POST(request: NextRequest) {
         LIMIT 1
       `
       
-      if (existing.rows.length > 0) {
+      if (existing.length > 0) {
         return NextResponse.json({ 
           error: "An appointment already exists for this time slot",
-          existingAppointmentId: existing.rows[0].id 
+          existingAppointmentId: existing[0].id 
         }, { status: 409 })
       }
     }
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating appointment:", error)
     
     // Handle unique constraint violation
-    if (error.message?.includes('unique_conversation_appointment')) {
+    if (error instanceof Error && error.message.includes('unique_conversation_appointment')) {
       return NextResponse.json({ 
         error: "An appointment already exists for this time slot" 
       }, { status: 409 })

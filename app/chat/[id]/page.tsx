@@ -34,45 +34,50 @@ function AssistantMessage({
   try {
     const response: AssistantResponse = JSON.parse(content)
     
-    // Trigger booking mode if response type is appointment_booking
-    // Use messageId to prevent multiple triggers for the same message
-    useEffect(() => {
-      if (response.type === 'appointment_booking' && onTriggerBooking) {
-        const bookingTriggeredKey = `booking_triggered_${messageId}`
-        
-        // Check if we've already triggered booking for this message
-        if (!sessionStorage.getItem(bookingTriggeredKey)) {
-          sessionStorage.setItem(bookingTriggeredKey, 'true')
-          setTimeout(() => {
-            onTriggerBooking()
-          }, 1000) // Delay to let user read the message
-        }
-      }
-    }, [response.type, onTriggerBooking, messageId])
+    // No automatic booking trigger - let user decide
     
     return (
       <div>
         <p>{response.message}</p>
         
         {response.type === 'appointment_booking' && (
-          <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs text-blue-600 font-medium">📅 Opening calendar...</p>
+          <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-lg">📅</span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Ready to book your appointment?</p>
+                  <p className="text-xs text-blue-600">Click below when you're ready to schedule</p>
+                </div>
+              </div>
+              <button
+                onClick={() => onTriggerBooking?.()}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:shadow-md"
+              >
+                Book Now
+              </button>
+            </div>
           </div>
         )}
         
         {response.type === 'human_handoff' && (
-          <div className="mt-2 p-2 bg-yellow-50 rounded-lg border border-yellow-200">
-            <p className="text-xs text-yellow-600 font-medium">👋 Connect with our team</p>
+          <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">👋</span>
+              <p className="text-sm text-amber-700 font-medium">Connect with our team</p>
+            </div>
           </div>
         )}
         
         {response.suggested_actions && response.suggested_actions.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {response.suggested_actions.map((action, i) => (
               <button
                 key={i}
                 onClick={() => onSuggestedAction?.(action)}
-                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-full border border-blue-200 hover:border-blue-300 transition-colors cursor-pointer"
+                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-full border border-gray-200 hover:border-gray-300 transition-all duration-200 cursor-pointer hover:shadow-sm font-medium"
               >
                 {action}
               </button>
@@ -270,6 +275,14 @@ export default function ChatPage() {
       return
     }
     
+    // Handle booking-related actions
+    if (action.toLowerCase().includes('book') || 
+        action.toLowerCase().includes('appointment') || 
+        action.toLowerCase().includes('schedule')) {
+      handleTriggerBooking()
+      return
+    }
+    
     // Create user message with the suggested action
     const userMessage = {
       id: Date.now().toString(),
@@ -392,135 +405,211 @@ export default function ChatPage() {
 
   if (!businessData) {
     return (
-      <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center">
-        <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm p-8 text-center">
-          <p className="text-gray-600">Loading your AI assistant...</p>
-        </Card>
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="bg-white rounded-3xl shadow-xl p-12 text-center max-w-md mx-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading your AI assistant</h3>
+          <p className="text-gray-500 text-sm">Please wait while we prepare your personalized experience...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f8f8]">
-      {/* Custom branded header */}
-      <header className="p-6 border-b border-gray-200" style={{ backgroundColor: `${businessData.primary_color}15` }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-normal"
-              style={{ backgroundColor: businessData.primary_color }}
-            >
-              {businessData.name.charAt(0)}
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Modern branded header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-lg font-semibold shadow-lg"
+                style={{ backgroundColor: businessData.primary_color }}
+              >
+                {businessData.name.charAt(0)}
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">{businessData.name}</h1>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <p className="text-sm text-gray-500">AI Assistant Online</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-normal text-black">{businessData.name}</h1>
-              <p className="text-sm text-gray-600">AI Assistant</p>
+            <div className="flex items-center gap-4">
+              <Badge 
+                className="text-white font-medium px-3 py-1.5 shadow-sm" 
+                style={{ backgroundColor: businessData.primary_color }}
+              >
+                <div className="w-1.5 h-1.5 bg-white rounded-full mr-2 animate-pulse"></div>
+                Active
+              </Badge>
+              <Link 
+                href="/" 
+                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors bg-white/60 px-4 py-2 rounded-xl hover:bg-white/80"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Home
+              </Link>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <Badge className="text-white" style={{ backgroundColor: businessData.primary_color }}>
-              Online
-            </Badge>
-            <Link href="/" className="text-sm text-black hover:underline">
-              <ArrowLeft className="h-4 w-4 inline mr-1" />
-              Back to ReceptionistAI
-            </Link>
           </div>
         </div>
       </header>
 
-      {/* Chat interface */}
-      <div className="max-w-4xl mx-auto p-6">
-        <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm h-[600px] flex flex-col">
-          <CardHeader className="p-6 border-b border-gray-200">
-            <div className="flex items-center gap-2">
+      {/* Main chat container */}
+      <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full px-6 py-6">
+        <div className="flex-1 bg-white rounded-3xl shadow-xl border border-gray-200/50 overflow-hidden flex flex-col">
+          {/* Chat header */}
+          <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
+            <div className="flex items-center gap-3">
               {mode === "booking" && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleBackToChat}
-                  className="mr-2"
+                  className="mr-2 hover:bg-gray-100 rounded-full"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
               )}
-              <MessageSquare className="h-5 w-5" style={{ color: businessData.primary_color }} />
-              <span className="font-normal">
-                {mode === "booking" ? "Book Appointment" : `Chat with ${businessData.name}`}
-              </span>
+              <div className="p-2 rounded-full" style={{ backgroundColor: `${businessData.primary_color}15` }}>
+                <MessageSquare className="h-5 w-5" style={{ color: businessData.primary_color }} />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">
+                  {mode === "booking" ? "Book Appointment" : `Chat with ${businessData.name}`}
+                </h2>
+                <p className="text-xs text-gray-500">
+                  {mode === "booking" ? "Schedule your appointment" : "Ask me anything about our services"}
+                </p>
+              </div>
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="flex-1 p-0 flex flex-col">
+          {/* Chat content */}
+          <div className="flex-1 flex flex-col">
             {mode === "chat" ? (
               <>
                 {/* Messages area */}
-                <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                  {messages.map((message) => (
-                    <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`max-w-[80%] p-3 rounded-lg ${
-                          message.role === "user" ? "text-white" : "bg-gray-100 text-black"
-                        }`}
-                        style={message.role === "user" ? { backgroundColor: businessData.primary_color } : {}}
-                      >
-                        <div className="text-sm">
-                          {message.role === 'assistant' ? (
-                            <AssistantMessage 
-                              content={message.content} 
-                              messageId={message.id}
-                              onTriggerBooking={handleTriggerBooking}
-                              onSuggestedAction={handleSuggestedAction}
-                            />
-                          ) : (
-                            <p>{message.content}</p>
-                          )}
+                <div className="flex-1 overflow-y-auto bg-gray-50/30">
+                  <div className="p-6 space-y-6 min-h-full">
+                    {messages.map((message) => (
+                      <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                        <div className={`flex gap-3 max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                          {/* Avatar */}
+                          <div className={`flex-shrink-0 ${message.role === "user" ? "ml-3" : "mr-3"}`}>
+                            {message.role === "user" ? (
+                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                You
+                              </div>
+                            ) : (
+                              <div 
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm"
+                                style={{ backgroundColor: businessData.primary_color }}
+                              >
+                                AI
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Message bubble */}
+                          <div
+                            className={`px-4 py-3 rounded-2xl shadow-sm ${
+                              message.role === "user" 
+                                ? "text-white rounded-br-lg" 
+                                : "bg-white text-gray-900 rounded-bl-lg border border-gray-100"
+                            }`}
+                            style={message.role === "user" ? { 
+                              backgroundColor: businessData.primary_color,
+                              backgroundImage: `linear-gradient(135deg, ${businessData.primary_color}, ${businessData.primary_color}dd)`
+                            } : {}}
+                          >
+                            <div className="text-sm leading-relaxed">
+                              {message.role === 'assistant' ? (
+                                <AssistantMessage 
+                                  content={message.content} 
+                                  messageId={message.id}
+                                  onTriggerBooking={handleTriggerBooking}
+                                  onSuggestedAction={handleSuggestedAction}
+                                />
+                              ) : (
+                                <p>{message.content}</p>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  
-                  {/* Loading indicator */}
-                  {isChatLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-gray-100 p-3 rounded-lg">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                    ))}
+                    
+                    {/* Loading indicator */}
+                    {isChatLoading && (
+                      <div className="flex justify-start">
+                        <div className="flex gap-3 max-w-[85%]">
+                          <div 
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm"
+                            style={{ backgroundColor: businessData.primary_color }}
+                          >
+                            AI
+                          </div>
+                          <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-lg shadow-sm border border-gray-100">
+                            <div className="flex space-x-1">
+                              <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: `${businessData.primary_color}60` }}></div>
+                              <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: `${businessData.primary_color}60`, animationDelay: "0.1s" }}></div>
+                              <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: `${businessData.primary_color}60`, animationDelay: "0.2s" }}></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
-                {/* Input area */}
-                <div className="p-6 border-t border-gray-200">
-                  <form onSubmit={handleSubmit} className="flex gap-2 mb-3">
-                    <Input
-                      value={input}
-                      onChange={handleInputChange}
-                      placeholder={`Ask ${businessData.name} anything...`}
-                      className="flex-1 bg-white/50 border-gray-200"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={!input.trim()}
-                      className="text-white"
-                      style={{ backgroundColor: businessData.primary_color }}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                {/* Modern input area */}
+                <div className="bg-white border-t border-gray-100 p-6">
+                  <form onSubmit={handleSubmit} className="mb-4">
+                    <div className="relative flex items-center gap-3">
+                      <div className="flex-1 relative">
+                        <Input
+                          value={input}
+                          onChange={handleInputChange}
+                          placeholder={`Ask ${businessData.name} anything...`}
+                          className="w-full px-4 py-3 pr-12 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400"
+                          style={{ focusRingColor: businessData.primary_color }}
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        disabled={!input.trim() || isChatLoading}
+                        className={`px-6 py-3 rounded-2xl text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          !input.trim() ? 'opacity-50' : 'hover:scale-105'
+                        }`}
+                        style={{ 
+                          backgroundColor: businessData.primary_color,
+                          backgroundImage: `linear-gradient(135deg, ${businessData.primary_color}, ${businessData.primary_color}dd)`
+                        }}
+                      >
+                        {isChatLoading ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </form>
                   
-                  {/* End chat button */}
-                  <div className="flex justify-center">
+                  {/* Footer actions */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-gray-400">
+                      Press Enter to send • Shift+Enter for new line
+                    </div>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={handleEndChat}
-                      className="text-xs text-gray-500 hover:text-gray-700"
+                      className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full px-4 py-2"
                     >
                       End Chat
                     </Button>
@@ -529,18 +618,20 @@ export default function ChatPage() {
               </>
             ) : (
               <>
-                {/* Booking area */}
-                <div className="flex-1 p-6 overflow-y-auto">
-                  <AppointmentBooking 
-                    onClose={handleBookingComplete}
-                    businessId={businessId}
-                    conversationId={conversationId}
-                  />
+                {/* Modern booking area */}
+                <div className="flex-1 overflow-y-auto bg-gray-50/30">
+                  <div className="p-6">
+                    <AppointmentBooking 
+                      onClose={handleBookingComplete}
+                      businessId={businessId}
+                      conversationId={conversationId}
+                    />
+                  </div>
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   )
