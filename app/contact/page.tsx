@@ -15,17 +15,17 @@ export default function ContactPage() {
           <div className="h-2 w-2 rounded-full bg-black"></div>
         </div>
         <div className="flex items-center space-x-6">
-          <button className="text-sm text-black">EN</button>
+          {/* <button className="text-sm text-black">EN</button> */}
           <Link href="/about" className="text-sm text-black hover:underline">
             ABOUT
           </Link>
           <Link href="/signin" className="text-sm text-black hover:underline">
             SIGN IN
           </Link>
-          <button className="flex flex-col space-y-1">
+          {/* <button className="flex flex-col space-y-1">
             <span className="h-0.5 w-6 bg-black"></span>
             <span className="h-0.5 w-6 bg-black"></span>
-          </button>
+          </button> */}
         </div>
       </header>
 
