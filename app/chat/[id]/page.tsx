@@ -20,7 +20,15 @@ interface AssistantResponse {
 
 type ChatMode = "chat" | "booking"
 
-function AssistantMessage({ content, onTriggerBooking }: { content: string, onTriggerBooking?: () => void }) {
+function AssistantMessage({ 
+  content, 
+  onTriggerBooking, 
+  onSuggestedAction 
+}: { 
+  content: string, 
+  onTriggerBooking?: () => void,
+  onSuggestedAction?: (action: string) => void 
+}) {
   try {
     const response: AssistantResponse = JSON.parse(content)
     
@@ -50,11 +58,15 @@ function AssistantMessage({ content, onTriggerBooking }: { content: string, onTr
         )}
         
         {response.suggested_actions && response.suggested_actions.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="mt-3 flex flex-wrap gap-2">
             {response.suggested_actions.map((action, i) => (
-              <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+              <button
+                key={i}
+                onClick={() => onSuggestedAction?.(action)}
+                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-full border border-blue-200 hover:border-blue-300 transition-colors cursor-pointer"
+              >
                 {action}
-              </span>
+              </button>
             ))}
           </div>
         )}
@@ -86,36 +98,86 @@ export default function ChatPage() {
   const businessId = params.id as string
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
   const [conversationId, setConversationId] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(true)
+  const [isBusinessLoading, setIsBusinessLoading] = useState(true)
   const [mode, setMode] = useState<ChatMode>("chat")
 
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    api: '/api/chat',
-    body: {
-      businessId,
-      conversationId,
-    },
-    initialMessages: businessData ? [{
-      id: 'greeting',
-      role: 'assistant' as const,
-      content: `Hello! Welcome to ${businessData.name}. I'm your AI assistant and I'm here to help you with any questions about our services. How can I assist you today?`
-    }] : [],
-    onFinish: async (message) => {
-      // Store AI response in database
-      if (conversationId) {
-        await fetch("/api/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            conversation_id: conversationId,
-            sender: "assistant",
-            content: message.content,
-            message_type: "text",
-          }),
-        })
-      }
+  const [messages, setMessages] = useState<Array<{id: string, role: 'user' | 'assistant', content: string}>>([])
+  const [input, setInput] = useState('')
+  const [isChatLoading, setIsChatLoading] = useState(false)
+
+  // Add initial greeting when business data is loaded
+  useEffect(() => {
+    if (businessData && messages.length === 0) {
+      setMessages([{
+        id: 'greeting',
+        role: 'assistant',
+        content: `Hello! Welcome to ${businessData.name}. I'm your AI assistant and I'm here to help you with any questions about our services. How can I assist you today?`
+      }])
     }
-  })
+  }, [businessData])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || !conversationId || isChatLoading) return
+
+    const userMessage = {
+      id: Date.now().toString(),
+      role: 'user' as const,
+      content: input.trim()
+    }
+
+    // Add user message immediately
+    setMessages(prev => [...prev, userMessage])
+    const currentInput = input
+    setInput('')
+    setIsChatLoading(true)
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          businessId,
+          conversationId,
+        })
+      })
+
+      if (response.ok) {
+        const aiResponse = await response.json()
+        
+        // Add AI response with streaming effect
+        const aiMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant' as const,
+          content: JSON.stringify(aiResponse) // Store full JSON response
+        }
+        
+        setMessages(prev => [...prev, aiMessage])
+      } else {
+        console.error('Chat API error:', response.status)
+        // Add error message
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'Sorry, I encountered an error. Please try again.'
+        }])
+      }
+    } catch (error) {
+      console.error('Chat error:', error)
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
+      }])
+    } finally {
+      setIsChatLoading(false)
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value)
+  }
 
   const handleTriggerBooking = () => {
     setMode("booking")
@@ -129,6 +191,67 @@ export default function ChatPage() {
     setMode("chat")
     // Add a confirmation message back to the chat
     // This would need to be handled differently with useChat, but for now we'll just switch back
+  }
+
+  const handleSuggestedAction = (action: string) => {
+    // When user clicks a suggested action, add it as their message
+    setInput(action)
+    // Or immediately send it
+    const userMessage = {
+      id: Date.now().toString(),
+      role: 'user' as const,
+      content: action
+    }
+    setMessages(prev => [...prev, userMessage])
+    
+    // Send the action as a message
+    sendMessage(action)
+  }
+
+  const sendMessage = async (messageContent: string) => {
+    if (!conversationId || isChatLoading) return
+
+    setIsChatLoading(true)
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: messages,
+          businessId,
+          conversationId,
+        })
+      })
+
+      if (response.ok) {
+        const aiResponse = await response.json()
+        
+        const aiMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant' as const,
+          content: JSON.stringify(aiResponse)
+        }
+        
+        setMessages(prev => [...prev, aiMessage])
+      } else {
+        console.error('Chat API error:', response.status)
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'Sorry, I encountered an error. Please try again.'
+        }])
+      }
+    } catch (error) {
+      console.error('Chat error:', error)
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
+      }])
+    } finally {
+      setIsChatLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -156,7 +279,7 @@ export default function ChatPage() {
               
               if (activeConv && mounted) {
                 setConversationId(activeConv.id)
-                setIsLoading(false)
+                setIsBusinessLoading(false)
                 return
               }
             }
@@ -182,7 +305,7 @@ export default function ChatPage() {
         console.error("Error loading business data:", error)
       } finally {
         if (mounted) {
-          setIsLoading(false)
+          setIsBusinessLoading(false)
         }
       }
     }
@@ -273,7 +396,11 @@ export default function ChatPage() {
                       >
                         <div className="text-sm">
                           {message.role === 'assistant' ? (
-                            <AssistantMessage content={message.content} onTriggerBooking={handleTriggerBooking} />
+                            <AssistantMessage 
+                              content={message.content} 
+                              onTriggerBooking={handleTriggerBooking}
+                              onSuggestedAction={handleSuggestedAction}
+                            />
                           ) : (
                             <p>{message.content}</p>
                           )}
@@ -281,6 +408,19 @@ export default function ChatPage() {
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Loading indicator */}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-gray-100 p-3 rounded-lg">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Input area */}

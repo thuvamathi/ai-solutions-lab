@@ -1,5 +1,6 @@
 import { google } from '@ai-sdk/google';
-import { streamText } from 'ai';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 import { 
   getBusiness, 
   getDocumentsByBusiness, 
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
     // Get business and documents for context
     const business = await getBusiness(businessId);
     if (!business) {
-      return new Response('Business not found', { status: 400 });
+      return Response.json({ error: 'Business not found' }, { status: 400 });
     }
 
     const documents = await getDocumentsByBusiness(businessId);
@@ -34,7 +35,7 @@ Content: ${doc.content || 'No content available'}
 
 YOUR ROLE:
 1. Answer questions about ${business.name} using the provided business information and documents
-2. Help customers understand services, pricing, policies, and procedures
+2. Help customers understand services, pricing, policies, and procedures  
 3. When customers need human assistance or want to book appointments, smoothly guide them toward scheduling
 4. Be helpful, professional, and knowledgeable about the business
 5. If you don't have specific information, offer to connect them with a team member
@@ -71,12 +72,6 @@ IMPORTANT GUIDELINES:
 
 Remember: You represent ${business.name} - be their best digital receptionist!`;
 
-    // Add system message to the beginning
-    const contextualMessages = [
-      { role: 'system', content: businessContext },
-      ...messages
-    ];
-
     // Store user message if we have conversation context
     if (conversationId && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
@@ -90,15 +85,37 @@ Remember: You represent ${business.name} - be their best digital receptionist!`;
       }
     }
 
-    const result = await streamText({
-      model: google('gemini-1.5-flash'),
-      messages: contextualMessages,
-      mode: 'json',
+    // Define the response schema
+    const responseSchema = z.object({
+      message: z.string().describe('The response message to the user'),
+      type: z.enum(['text', 'appointment_booking', 'human_handoff']).describe('The type of response'),
+      intent: z.enum(['general', 'pricing', 'services', 'appointment', 'contact']).describe('The user intent'),
+      suggested_actions: z.array(z.string()).optional().describe('Optional suggested next steps for the user')
     });
 
-    return result.toDataStreamResponse();
+    // Generate structured response using generateObject
+    const result = await generateObject({
+      model: google('gemini-1.5-flash'),
+      system: businessContext,
+      messages,
+      schema: responseSchema,
+    });
+
+    const parsedResponse = result.object;
+
+    // Store AI response in database
+    if (conversationId) {
+      await createMessage({
+        conversation_id: conversationId,
+        sender: 'assistant',
+        content: parsedResponse.message,
+        message_type: 'text',
+      });
+    }
+
+    return Response.json(parsedResponse);
   } catch (error) {
     console.error('Error in chat API:', error);
-    return new Response('Error processing request', { status: 500 });
+    return Response.json({ error: 'Error processing request' }, { status: 500 });
   }
 }
