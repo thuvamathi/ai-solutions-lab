@@ -65,28 +65,21 @@ export default function HomePage() {
                   TRY IT FREE - NO SIGNUP
                 </Button>
               </Link>
-             <p className="mt-8 text-sm leading-relaxed">
-  <span className="text-black font-medium">24/7 AI ASSISTANT</span>{" "}
-  <span className="text-gray-600">THAT HANDLES</span>{" "}
-  <span className="text-blue-600">INQUIRIES</span>
-  <br />
-  <span className="text-gray-600">AND</span>{" "}
-  <span className="text-green-600">BOOKS APPOINTMENTS AUTOMATICALLY.</span>
-</p>
+            <p className="mt-8 text-base leading-relaxed text-gray-700 max-w-sm">
+              Your always-on AI assistant that engages customers, 
+              answers questions, and seamlessly books appointments 
+              while you focus on what matters most.
+            </p>
             </div>
 
           </div>
 
-         <p className="mt-24 max-w-xl text-lg leading-relaxed text-gray-600">
-  Perfect for{" "}
-  <span className="text-black font-medium">
-    dental offices, law firms, consultancy services
-  </span>
-  , and any business that needs to handle customer inquiries and schedule meetings.{" "}
-  <span className="text-blue-600 font-medium">
-    Transform your website into a powerful customer service hub.
-  </span>
-</p>
+        <p className="mt-24 max-w-xl text-lg leading-relaxed text-gray-600">
+          Perfect for dental offices, law firms, consultancy services, 
+          and any business that needs to handle customer inquiries and 
+          schedule meetings. Transform your website into a powerful 
+          customer service hub.
+        </p>
         </div>
       </main>
 
