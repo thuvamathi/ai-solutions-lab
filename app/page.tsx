@@ -3,7 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge"
 import { MessageSquare, Calendar, Clock, Users, Zap, Shield, Check, Star } from "lucide-react"
 import Link from "next/link"
-import { EnhancedChatWidget } from "@/components/chat/enhanced-chat-widget"
+// import { EnhancedChatWidget } from "@/components/chat/enhanced-chat-widget"
 import Image from "next/image"
 
 export default function HomePage() {
@@ -29,34 +29,20 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative px-6 pt-12">
-        {/* Hero background image */}
-        <div
-          className="absolute right-0 top-0 w-2/3 h-[800px] pr-12"
-          aria-hidden="true"
-        >
-          <div className="relative w-full h-full opacity-90">
-            <Image 
-              src="/chat2.png" 
-              alt="receptionist"
-              fill
-              className="object-contain object-right"
-              priority
-            />
-          </div>
-        </div>
+<main className="px-6 pt-12">
+        {/* Hero Section - Side by side layout */}
+        <div className="flex flex-col lg:flex-row lg:items-start gap-8">
+          {/* Left Content - Hero Text */}
+          <div className="flex-1 lg:max-w-xl">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-light leading-tight tracking-tight text-black">
+              YOUR SMART
+              <br />
+              DIGITAL
+              <br />
+              RECEPTIONIST.
+            </h1>
 
-        <div className="relative z-10">
-          <h1 className="max-w-3xl text-6xl font-light leading-tight tracking-tight text-black">
-            YOUR SMART
-            <br />
-            DIGITAL
-            <br />
-            RECEPTIONIST.
-          </h1>
-
-          <div className="mt-24 flex justify-between">
-            <div className="max-w-md">
+            <div className="mt-8">
               <Link href="/setup">
                 <Button
                   variant="outline"
@@ -65,21 +51,63 @@ export default function HomePage() {
                   TRY IT FREE - NO SIGNUP
                 </Button>
               </Link>
-            <p className="mt-8 text-base leading-relaxed text-gray-700 max-w-sm">
-              Your always-on AI assistant that engages customers, 
-              answers questions, and seamlessly books appointments 
-              while you focus on what matters most.
-            </p>
-            </div>
+              <div className="mt-8 p-6 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-2 h-2 bg-emerald-500 rounded-full mt-3"></div>
+                  <div>
+                    <p className="lg:text-base text-sm leading-relaxed text-gray-800 font-medium">
+                      Your always-on AI assistant that engages customers, answers questions, 
+                      and seamlessly books appointments. Perfect for dental offices, law firms, 
+                      consultancy services, and any business that needs professional customer service.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
+              {/* Optional: Key Benefits Pills */}
+              <div className="mt-6 flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-black text-white text-sm rounded-full">
+                  24/7 Available
+                </span>
+                <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full border">
+                  No Setup Required
+                </span>
+                <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full border">
+                  Instant Booking
+                </span>
+              </div>
+            </div>
           </div>
 
-        <p className="mt-24 max-w-xl text-lg leading-relaxed text-gray-600">
-          Perfect for dental offices, law firms, consultancy services, 
-          and any business that needs to handle customer inquiries and 
-          schedule meetings. Transform your website into a powerful 
-          customer service hub.
-        </p>
+          {/* Right Content - Video (larger width on desktop) */}
+          <div className="lg:flex-[1.2] lg:ml-8">
+            <div className="relative w-full aspect-[4/3] max-w-md mx-auto lg:max-w-full">
+              {/* Rectangular container with rounded corners */}
+              <div className="relative w-full h-full rounded-[2rem] border-2 border-black p-2">
+                <div className="relative w-full h-full rounded-[1.75rem] border-2 border-black overflow-hidden">
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    poster="/chat2.png"
+                  >
+                    <source src="/chat-vid.mp4" type="video/mp4" />
+                    {/* Fallback image for browsers that don't support video */}
+                    <Image 
+                      src="/chat2.png" 
+                      alt="AI receptionist demonstration"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </video>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
@@ -501,9 +529,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-
-      {/* Enhanced ChatWidget Component with Appointment Booking */}
-      <EnhancedChatWidget />
     </div>
   )
 }

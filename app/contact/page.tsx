@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MapPin } from "lucide-react"
 import Link from "next/link"
-import { EnhancedChatWidget } from "@/components/chat/enhanced-chat-widget"
+// import { EnhancedChatWidget } from "@/components/chat/enhanced-chat-widget"
 
 export default function ContactPage() {
   return (
@@ -171,7 +171,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <EnhancedChatWidget />
     </div>
   )
 }
