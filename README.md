@@ -1,80 +1,120 @@
 # AI Appointment Setter Lab
 
-An AI-powered receptionist system for learning deployment and MLOps practices.
+A platform that creates custom AI receptionist instances for different businesses. Build, deploy, and monitor AI-powered customer support with appointment booking capabilities.
 
-## 🎯 Overview
+## 🎯 What We're Building
 
-This lab guides you through building and deploying an **AI-powered receptionist** that:
-- Handles customer inquiries using business documents
-- Intelligently decides when to answer questions vs. schedule appointments  
-- Provides a seamless booking experience with calendar integration
-- Sends automated email confirmations
-- Tracks performance and costs through MLOps monitoring
+This lab teaches you to create an **AI receptionist service** where:
+- **Each business gets a personalized chatbot** that understands their specific services, documents, and policies
+- **AI handles customer inquiries** using uploaded business documents and context
+- **Intelligent appointment booking** when customers need human assistance
+- **Complete MLOps pipeline** for monitoring AI performance, costs, and success rates
+- **Multiple deployment strategies** from local development to serverless production
 
-**Perfect for:** Dental offices, law firms, consultancy services, repair shops, and any service-based business.
+**Real-World Applications:** Dental offices, law firms, consultancy services, repair shops, and any service-based business that handles customer inquiries and scheduling.
 
-## 🚀 Lab 1 Setup
+## 🏗️ Architecture & Tech Stack
 
-### Prerequisites
-- **Node.js 18+**
-- **Python 3.9+**  
-- **Git**
-- **Docker**
-- **Google Cloud Account** (free tier)
-- **AWS Account** (free tier)
-
-### Quick Start
-
-1. **Clone Repository**
-```bash
-git clone https://github.com/[your-repo]/ai-appointment-setter-lab.git
-cd ai-appointment-setter-lab
+```
+Next.js Full-Stack App → Vercel AI SDK → Gemini API
+        ↓
+   Neon PostgreSQL
+        ↓
+   Email Service (Resend)
+        ↓
+Flask MLOps Service → MLflow
 ```
 
-2. **Install Frontend Dependencies**
+**Frontend + Backend:** Next.js 14 with App Router and API Routes  
+**AI Integration:** Vercel AI SDK + Google Gemini API  
+**Database:** Neon PostgreSQL (serverless)  
+**Email:** Resend API  
+**MLOps:** Flask service with MLflow tracking  
+
+## 🚀 Getting Started
+
+### For Complete Setup Instructions
+📖 **[Follow Lab 1 Setup Guide](COURSE-NOTES/lab-1.md)** - includes account creation, tool installation, and environment configuration.
+
+### Quick Clone (if you already have Git/GitHub ready)
 ```bash
+git clone https://github.com/edielam/ai-solutions-lab.git
+cd ai-solutions-lab
 npm install
 npm run dev
 ```
-Visit `http://localhost:3000` to see the application.
 
-3. **Python Environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or
-venv\Scripts\activate     # Windows
+Visit `http://localhost:3000` to see the complete application with:
+- Landing page and marketing site
+- Free trial onboarding flow (no signup required)
+- Business setup wizard
+- AI chat interface with appointment booking
+- Document upload and processing
 
-pip install -r requirements.txt
-```
+## 📁 Codebase Overview
 
-4. **Environment Variables**
-Create `.env` file:
-```env
-DATABASE_URL=postgresql://localhost/ai_receptionist_dev
-GOOGLE_API_KEY=your_gemini_api_key_here
-SENDGRID_API_KEY=your_sendgrid_key_here
-SECRET_KEY=your_secret_key_here
-```
+### **Frontend Application** (`app/` & `components/`)
+- **Landing Page** (`app/page.tsx`) - Marketing site with pricing and features
+- **Setup Wizard** (`app/setup/page.tsx`) - 3-step business onboarding
+- **Chat Interface** (`app/chat/[id]/page.tsx`) - Personalized AI receptionist per business
+- **UI Components** (`components/`) - Chat system, appointment booking, document upload
+<!-- - **Type Definitions** (`lib/types.ts`) - Database models and interfaces
+- **Mock Data** (`lib/storage.ts`) - Local storage system for development -->
 
-5. **Database Setup**
-```bash
-docker run --name postgres-ai-lab -e POSTGRES_PASSWORD=password -d -p 5432:5432 postgres
-```
 
-## 📁 Project Structure
-```
-├── app/                    # Next.js pages
-├── components/             # UI components  
-├── lib/                   # Utilities
-├── lab-materials/         # Lab instructions
-├── backend/               # Python API
-├── tests/                 # Test files
-└── requirements.txt       # Python deps
-```
+### **MLOps Service** (To be built in labs)
+- **Flask service** for metrics tracking
+- **MLflow integration** for AI performance monitoring
+- **Real-time analytics** for conversation success rates
 
-## 🎓 Next Steps
-Follow the detailed instructions in `lab-materials/lab.md` for Lab 1 and beyond.
+## 🎓 Learning Journey
+
+This lab covers **12 progressive modules**:
+
+1. **Environment Setup** - Get everything running locally
+2. **AI & MLOps Integration** - Real Gemini API + tracking with MLflow
+3. **Testing AI Systems** - pytest for AI components
+4. **CI/CD Pipelines** - GitHub Actions automation
+5. **Containerization** - Docker for MLOps service
+6. **Kubernetes** - Orchestration and scaling
+7. **Cloud Deployment** - AWS/GCP production deployment  
+8. **Serverless** - Lambda/Cloud Functions conversion
+9. **Monitoring** - Essential metrics and alerting
+10. **Security** - Authentication and compliance
+11. **Performance Analysis** - Load testing and optimization
+12. **Final Project** - Complete system demonstration
+
+## 🔍 Key Features to Explore
+
+### **Free Trial Experience**
+1. Click "TRY IT FREE - NO SIGNUP" on homepage
+2. Set up a mock business (dental office, law firm, etc.)
+3. Upload business documents or skip
+4. Get personalized chat URL
+5. Test AI responses and appointment booking
+
+### **AI Receptionist Capabilities**
+- Understands business context from uploaded documents
+- Answers common questions about services, hours, pricing
+- Smoothly transitions to appointment booking when needed
+- Sends confirmation emails
+- Maintains conversation history
+
+### **Business Customization**
+- Custom branding and colors
+- Personalized welcome messages  
+- Business-specific document knowledge
+- Tailored appointment types and durations
+
+## 🎯 Learning Outcomes
+
+By completing this lab, you'll have:
+- **Production-ready AI application** with real business value
+- **Complete MLOps pipeline** from development to monitoring
+- **Multiple deployment strategies** (containerized, serverless, cloud)
+- **End-to-end testing** of AI systems
+- **Industry-relevant skills** in AI deployment and operations
 
 ---
-**Ready to start?** Run `npm run dev` and explore the application at `http://localhost:3000`
+
+**Ready to build your AI receptionist service?** Start with **[Lab 1 Setup](COURSE-NOTES/lab-1.md)** to get your development environment ready!
