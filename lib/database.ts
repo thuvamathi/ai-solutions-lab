@@ -147,6 +147,31 @@ export async function getConversationsByBusiness(businessId: string) {
   return result as Conversation[]
 }
 
+export async function updateConversation(id: string, updates: Partial<Conversation>) {
+  const setClause = Object.keys(updates)
+    .filter((key) => key !== "id" && key !== "created_at" && key !== "updated_at")
+    .map((key) => `${key} = $${Object.keys(updates).indexOf(key) + 2}`)
+    .join(", ")
+
+  if (!setClause) return null
+
+  const values = [
+    id,
+    ...Object.values(updates).filter((_, index) => {
+      const key = Object.keys(updates)[index]
+      return key !== "id" && key !== "created_at" && key !== "updated_at"
+    }),
+  ]
+
+  const result = await sql`
+    UPDATE conversations 
+    SET ${sql.unsafe(setClause)}, updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `
+  return result[0] as Conversation | undefined
+}
+
 // Message operations
 export async function createMessage(message: Omit<Message, "id" | "created_at">) {
   const result = await sql`
@@ -179,6 +204,12 @@ export async function createAppointment(appointment: Omit<Appointment, "id" | "c
 export async function getAppointmentsByBusiness(businessId: string) {
   const result =
     await sql`SELECT * FROM appointments WHERE business_id = ${businessId} ORDER BY appointment_date DESC, appointment_time DESC`
+  return result as Appointment[]
+}
+
+export async function getAppointmentsByConversation(conversationId: string) {
+  const result =
+    await sql`SELECT * FROM appointments WHERE conversation_id = ${conversationId} AND status != 'cancelled' ORDER BY appointment_date DESC, appointment_time DESC`
   return result as Appointment[]
 }
 

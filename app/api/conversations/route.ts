@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createConversation, getConversationsByBusiness } from "@/lib/database"
+import { createConversation, getConversationsByBusiness, updateConversation } from "@/lib/database"
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,5 +38,26 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating conversation:", error)
     return NextResponse.json({ error: "Failed to create conversation" }, { status: 500 })
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { conversation_id, ...updates } = await request.json()
+
+    if (!conversation_id) {
+      return NextResponse.json({ error: "conversation_id is required" }, { status: 400 })
+    }
+
+    const updatedConversation = await updateConversation(conversation_id, updates)
+
+    if (!updatedConversation) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 })
+    }
+
+    return NextResponse.json(updatedConversation)
+  } catch (error) {
+    console.error("Error updating conversation:", error)
+    return NextResponse.json({ error: "Failed to update conversation" }, { status: 500 })
   }
 }

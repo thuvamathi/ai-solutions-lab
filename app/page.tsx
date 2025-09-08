@@ -8,7 +8,7 @@ import Image from "next/image"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#f8f8f8]">
+    <div className="min-h-screen bg-[#dfe2e2]">
       <header className="flex items-center justify-between p-6">
         <div className="flex space-x-2">
           <div className="h-2 w-2 rounded-full bg-black" title="Decorative element"></div>
@@ -65,25 +65,28 @@ export default function HomePage() {
                   TRY IT FREE - NO SIGNUP
                 </Button>
               </Link>
-              <p className="mt-8 text-sm leading-relaxed text-gray-600">
-                24/7 AI ASSISTANT THAT HANDLES INQUIRIES
-                <br />
-                AND BOOKS APPOINTMENTS AUTOMATICALLY.
-              </p>
+             <p className="mt-8 text-sm leading-relaxed">
+  <span className="text-black font-medium">24/7 AI ASSISTANT</span>{" "}
+  <span className="text-gray-600">THAT HANDLES</span>{" "}
+  <span className="text-blue-600">INQUIRIES</span>
+  <br />
+  <span className="text-gray-600">AND</span>{" "}
+  <span className="text-green-600">BOOKS APPOINTMENTS AUTOMATICALLY.</span>
+</p>
             </div>
 
-            <div className="flex items-end">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-black">HOW IT WORKS</span>
-                <span className="h-px w-12 bg-black"></span>
-              </div>
-            </div>
           </div>
 
-          <p className="mt-24 max-w-xl text-sm leading-relaxed text-gray-600">
-            Perfect for dental offices, law firms, consultancy services, and any business that needs to handle customer
-            inquiries and schedule meetings. Transform your website into a powerful customer service hub.
-          </p>
+         <p className="mt-24 max-w-xl text-lg leading-relaxed text-gray-600">
+  Perfect for{" "}
+  <span className="text-black font-medium">
+    dental offices, law firms, consultancy services
+  </span>
+  , and any business that needs to handle customer inquiries and schedule meetings.{" "}
+  <span className="text-blue-600 font-medium">
+    Transform your website into a powerful customer service hub.
+  </span>
+</p>
         </div>
       </main>
 

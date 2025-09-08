@@ -23,23 +23,32 @@ type ChatMode = "chat" | "booking"
 function AssistantMessage({ 
   content, 
   onTriggerBooking, 
-  onSuggestedAction 
+  onSuggestedAction,
+  messageId 
 }: { 
   content: string, 
   onTriggerBooking?: () => void,
-  onSuggestedAction?: (action: string) => void 
+  onSuggestedAction?: (action: string) => void,
+  messageId: string 
 }) {
   try {
     const response: AssistantResponse = JSON.parse(content)
     
     // Trigger booking mode if response type is appointment_booking
+    // Use messageId to prevent multiple triggers for the same message
     useEffect(() => {
       if (response.type === 'appointment_booking' && onTriggerBooking) {
-        setTimeout(() => {
-          onTriggerBooking()
-        }, 1000) // Delay to let user read the message
+        const bookingTriggeredKey = `booking_triggered_${messageId}`
+        
+        // Check if we've already triggered booking for this message
+        if (!sessionStorage.getItem(bookingTriggeredKey)) {
+          sessionStorage.setItem(bookingTriggeredKey, 'true')
+          setTimeout(() => {
+            onTriggerBooking()
+          }, 1000) // Delay to let user read the message
+        }
       }
-    }, [response.type, onTriggerBooking])
+    }, [response.type, onTriggerBooking, messageId])
     
     return (
       <div>
@@ -189,36 +198,96 @@ export default function ChatPage() {
 
   const handleBookingComplete = () => {
     setMode("chat")
+    
     // Add a confirmation message back to the chat
-    // This would need to be handled differently with useChat, but for now we'll just switch back
+    const confirmationMessage = {
+      id: (Date.now() + 2).toString(),
+      role: 'assistant' as const,
+      content: JSON.stringify({
+        message: "Perfect! Your appointment has been successfully booked. You'll receive a confirmation email shortly. Is there anything else I can help you with today?",
+        type: 'text',
+        intent: 'general',
+        suggested_actions: ['Ask about services', 'Get contact information', 'End chat']
+      })
+    }
+    
+    setMessages(prev => [...prev, confirmationMessage])
   }
 
-  const handleSuggestedAction = (action: string) => {
-    // When user clicks a suggested action, add it as their message
-    setInput(action)
-    // Or immediately send it
+  const handleEndChat = async () => {
+    try {
+      // Add farewell message
+      const farewellMessage = {
+        id: Date.now().toString(),
+        role: 'user' as const,
+        content: 'End chat'
+      }
+      
+      const assistantFarewellMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant' as const,
+        content: JSON.stringify({
+          message: "Thank you for chatting with us! Have a great day. This conversation has been ended.",
+          type: 'text',
+          intent: 'general'
+        })
+      }
+      
+      // Add messages to chat
+      setMessages(prev => [...prev, farewellMessage, assistantFarewellMessage])
+      
+      // Update conversation status to completed
+      if (conversationId) {
+        await fetch('/api/conversations', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            status: 'completed'
+          })
+        })
+        
+        // Clear conversation from localStorage
+        localStorage.removeItem(`conversation_${businessId}`)
+      }
+      
+      // Redirect back to landing page after a delay
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Error ending chat:', error)
+    }
+  }
+
+  const handleSuggestedAction = async (action: string) => {
+    if (!conversationId || isChatLoading) return
+    
+    // Handle special actions
+    if (action.toLowerCase().includes('end chat')) {
+      await handleEndChat()
+      return
+    }
+    
+    // Create user message with the suggested action
     const userMessage = {
       id: Date.now().toString(),
       role: 'user' as const,
       content: action
     }
-    setMessages(prev => [...prev, userMessage])
     
-    // Send the action as a message
-    sendMessage(action)
-  }
-
-  const sendMessage = async (messageContent: string) => {
-    if (!conversationId || isChatLoading) return
-
+    // Add user message to chat immediately
+    setMessages(prev => [...prev, userMessage])
     setIsChatLoading(true)
 
     try {
+      // Send API request with current messages plus the new action message
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: messages,
+          messages: [...messages, userMessage],
           businessId,
           conversationId,
         })
@@ -253,6 +322,7 @@ export default function ChatPage() {
       setIsChatLoading(false)
     }
   }
+
 
   useEffect(() => {
     let mounted = true
@@ -398,6 +468,7 @@ export default function ChatPage() {
                           {message.role === 'assistant' ? (
                             <AssistantMessage 
                               content={message.content} 
+                              messageId={message.id}
                               onTriggerBooking={handleTriggerBooking}
                               onSuggestedAction={handleSuggestedAction}
                             />
@@ -425,7 +496,7 @@ export default function ChatPage() {
 
                 {/* Input area */}
                 <div className="p-6 border-t border-gray-200">
-                  <form onSubmit={handleSubmit} className="flex gap-2">
+                  <form onSubmit={handleSubmit} className="flex gap-2 mb-3">
                     <Input
                       value={input}
                       onChange={handleInputChange}
@@ -441,13 +512,30 @@ export default function ChatPage() {
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>
+                  
+                  {/* End chat button */}
+                  <div className="flex justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEndChat}
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                    >
+                      End Chat
+                    </Button>
+                  </div>
                 </div>
               </>
             ) : (
               <>
                 {/* Booking area */}
                 <div className="flex-1 p-6 overflow-y-auto">
-                  <AppointmentBooking onClose={handleBookingComplete} />
+                  <AppointmentBooking 
+                    onClose={handleBookingComplete}
+                    businessId={businessId}
+                    conversationId={conversationId}
+                  />
                 </div>
               </>
             )}
