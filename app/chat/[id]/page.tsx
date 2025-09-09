@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { MessageSquare, Send, ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -40,20 +40,20 @@ function AssistantMessage({
         <p>{response.message}</p>
         
         {response.type === 'appointment_booking' && (
-          <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+          <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-lg">📅</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-sm sm:text-lg">📅</span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-blue-900">Ready to book your appointment?</p>
-                  <p className="text-xs text-blue-600">Click below when you're ready to schedule</p>
+                  <p className="text-xs sm:text-sm font-semibold text-blue-900">Ready to book your appointment?</p>
+                  <p className="text-xs text-blue-600 hidden sm:block">Click below when you're ready to schedule</p>
                 </div>
               </div>
               <button
                 onClick={() => onTriggerBooking?.()}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:shadow-md"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors hover:shadow-md"
               >
                 Book Now
               </button>
@@ -62,21 +62,21 @@ function AssistantMessage({
         )}
         
         {response.type === 'human_handoff' && (
-          <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
             <div className="flex items-center gap-2">
-              <span className="text-lg">👋</span>
-              <p className="text-sm text-amber-700 font-medium">Connect with our team</p>
+              <span className="text-sm sm:text-lg">👋</span>
+              <p className="text-xs sm:text-sm text-amber-700 font-medium">Connect with our team</p>
             </div>
           </div>
         )}
         
         {response.suggested_actions && response.suggested_actions.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-3 sm:mt-4 flex flex-wrap gap-1.5 sm:gap-2">
             {response.suggested_actions.map((action, i) => (
               <button
                 key={i}
                 onClick={() => onSuggestedAction?.(action)}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-full border border-gray-200 hover:border-gray-300 transition-all duration-200 cursor-pointer hover:shadow-sm font-medium"
+                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gray-200 hover:border-gray-300 transition-all duration-200 cursor-pointer hover:shadow-sm font-medium"
               >
                 {action}
               </button>
@@ -117,6 +117,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Array<{id: string, role: 'user' | 'assistant', content: string}>>([])
   const [input, setInput] = useState('')
   const [isChatLoading, setIsChatLoading] = useState(false)
+  const [isEndingChat, setIsEndingChat] = useState(false)
   const [remainingMessages, setRemainingMessages] = useState(MAX_FREE_MESSAGES);
 
   // Add initial greeting when business data is loaded
@@ -136,8 +137,8 @@ export default function ChatPage() {
     }
   }, [businessId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault()
     if (!input.trim() || !conversationId || isChatLoading) return
 
     // Check remaining messages
@@ -235,8 +236,15 @@ export default function ChatPage() {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
+    }
   }
 
   const handleTriggerBooking = () => {
@@ -342,6 +350,8 @@ export default function ChatPage() {
   }
 
   const handleEndChat = async () => {
+    setIsEndingChat(true)
+    
     try {
       // Add farewell message
       const farewellMessage = {
@@ -354,7 +364,7 @@ export default function ChatPage() {
         id: (Date.now() + 1).toString(),
         role: 'assistant' as const,
         content: JSON.stringify({
-          message: "Thank you for chatting with us! Have a great day. This conversation has been ended.",
+          message: "Thank you for chatting with us! Have a great day. Redirecting you back to the homepage...",
           type: 'text',
           intent: 'general'
         })
@@ -381,10 +391,11 @@ export default function ChatPage() {
       // Redirect back to landing page after a delay
       setTimeout(() => {
         window.location.href = '/'
-      }, 3000)
+      }, 2000)
       
     } catch (error) {
       console.error('Error ending chat:', error)
+      setIsEndingChat(false)
     }
   }
 
@@ -576,7 +587,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 relative">
       {/* Modern branded header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -657,14 +668,15 @@ export default function ChatPage() {
                       <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                         <div className={`flex gap-3 max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                           {/* Avatar */}
-                          <div className={`flex-shrink-0 ${message.role === "user" ? "ml-3" : "mr-3"}`}>
+                          <div className={`flex-shrink-0 ${message.role === "user" ? "ml-2 sm:ml-3" : "mr-2 sm:mr-3"}`}>
                             {message.role === "user" ? (
-                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                You
+                              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-medium">
+                                <span className="hidden sm:block">You</span>
+                                <span className="block sm:hidden">U</span>
                               </div>
                             ) : (
                               <div 
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm"
+                                className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-medium shadow-sm"
                                 style={{ backgroundColor: businessData.primary_color }}
                               >
                                 AI
@@ -674,7 +686,7 @@ export default function ChatPage() {
                           
                           {/* Message bubble */}
                           <div
-                            className={`px-4 py-3 rounded-2xl shadow-sm ${
+                            className={`px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-sm ${
                               message.role === "user" 
                                 ? "text-white rounded-br-lg" 
                                 : "bg-white text-gray-900 rounded-bl-lg border border-gray-100"
@@ -684,7 +696,7 @@ export default function ChatPage() {
                               backgroundImage: `linear-gradient(135deg, ${businessData.primary_color}, ${businessData.primary_color}dd)`
                             } : {}}
                           >
-                            <div className="text-sm leading-relaxed">
+                            <div className="text-xs sm:text-sm leading-relaxed">
                               {message.role === 'assistant' ? (
                                 <AssistantMessage 
                                   content={message.content} 
@@ -727,14 +739,16 @@ export default function ChatPage() {
                 {/* Modern input area */}
                 <div className="bg-white border-t border-gray-100 p-6">
                   <form onSubmit={handleSubmit} className="mb-4">
-                    <div className="relative flex items-center gap-3">
+                    <div className="relative flex items-end gap-3">
                       <div className="flex-1 relative">
-                        <Input
+                        <Textarea
                           value={input}
                           onChange={handleInputChange}
+                          onKeyDown={handleKeyDown}
                           placeholder={`Ask ${businessData.name} anything...`}
-                          className="w-full px-4 py-3 pr-12 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400"
+                          className="w-full px-4 py-3 pr-12 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400 resize-none min-h-[48px] max-h-32"
                           style={{ '--tw-ring-color': businessData.primary_color } as React.CSSProperties}
+                          rows={1}
                         />
                       </div>
                       <Button
@@ -756,9 +770,9 @@ export default function ChatPage() {
                       </Button>
 
                       {/* Add message counter */}
-                      <div className="absolute right-20 top-1/2 -translate-y-1/2 px-3 py-1 bg-gray-100 rounded-full">
+                      <div className="absolute right-16 sm:right-20 bottom-2 px-2 sm:px-3 py-1 bg-gray-100 rounded-full">
                         <span className="text-xs text-gray-500">
-                          {remainingMessages} / {MAX_FREE_MESSAGES} messages left
+                          {remainingMessages} / {MAX_FREE_MESSAGES} left
                         </span>
                       </div>
                     </div>
@@ -774,9 +788,17 @@ export default function ChatPage() {
                       variant="ghost"
                       size="sm"
                       onClick={handleEndChat}
-                      className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full px-4 py-2"
+                      disabled={isEndingChat}
+                      className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full px-4 py-2 disabled:opacity-50"
                     >
-                      End Chat
+                      {isEndingChat ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                          Ending...
+                        </div>
+                      ) : (
+                        "End Chat"
+                      )}
                     </Button>
                   </div>
 
@@ -809,6 +831,19 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+
+      {/* Loading overlay for ending chat */}
+      {isEndingChat && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-sm mx-4">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ending Chat Session</h3>
+            <p className="text-sm text-gray-500">Thank you for chatting with us! Redirecting you back to the homepage...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
