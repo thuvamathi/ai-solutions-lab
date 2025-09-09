@@ -171,8 +171,7 @@ export default function ChatPage() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'X-Message-Count': (MAX_FREE_MESSAGES - remainingMessages).toString()
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
@@ -193,9 +192,28 @@ export default function ChatPage() {
         
         setMessages(prev => [...prev, aiMessage])
 
-        // Increment message count and update remaining
-        incrementMessageCount(businessId);
-        setRemainingMessages(prev => prev - 1);
+        // Update remaining from server response (more accurate than client-side counting)
+        if (typeof aiResponse.remainingMessages === 'number') {
+          setRemainingMessages(aiResponse.remainingMessages);
+        } else {
+          // Fallback to client-side increment
+          incrementMessageCount(businessId);
+          setRemainingMessages(prev => prev - 1);
+        }
+      } else if (response.status === 429) {
+        // Handle rate limiting
+        const errorData = await response.json()
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: JSON.stringify({
+            message: errorData.message || "You've reached the limit for free messages. Please sign up to continue chatting.",
+            type: "text",
+            intent: "general",
+            suggested_actions: ["Sign up now", "Learn more about pricing"]
+          })
+        }]);
+        setRemainingMessages(0);
       } else {
         console.error('Chat API error:', response.status)
         // Add error message
@@ -229,22 +247,98 @@ export default function ChatPage() {
     setMode("chat")
   }
 
-  const handleBookingComplete = () => {
+  const handleBookingComplete = async () => {
     setMode("chat")
     
-    // Add a confirmation message back to the chat
-    const confirmationMessage = {
-      id: (Date.now() + 2).toString(),
-      role: 'assistant' as const,
-      content: JSON.stringify({
-        message: "Perfect! Your appointment has been successfully booked. You'll receive a confirmation email shortly. Is there anything else I can help you with today?",
-        type: 'text',
-        intent: 'general',
-        suggested_actions: ['Ask about services', 'Get contact information', 'End chat']
-      })
+    // Send a booking confirmation message through the API to maintain rate limiting
+    const confirmationUserMessage = {
+      id: Date.now().toString(),
+      role: 'user' as const,
+      content: 'Appointment booked successfully'
     }
-    
-    setMessages(prev => [...prev, confirmationMessage])
+
+    setMessages(prev => [...prev, confirmationUserMessage])
+    setIsChatLoading(true)
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [...messages, confirmationUserMessage],
+          businessId,
+          conversationId,
+        })
+      })
+
+      if (response.ok) {
+        const aiResponse = await response.json()
+        
+        // Override the AI response with our booking confirmation
+        const confirmationMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant' as const,
+          content: JSON.stringify({
+            message: "Perfect! Your appointment has been successfully booked. You'll receive a confirmation email shortly. Is there anything else I can help you with today?",
+            type: 'text',
+            intent: 'general',
+            suggested_actions: ['Ask about services', 'Get contact information', 'End chat']
+          })
+        }
+        
+        setMessages(prev => [...prev, confirmationMessage])
+
+        // Update remaining from server response
+        if (typeof aiResponse.remainingMessages === 'number') {
+          setRemainingMessages(aiResponse.remainingMessages);
+        }
+      } else if (response.status === 429) {
+        // Handle rate limiting
+        const errorData = await response.json()
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: JSON.stringify({
+            message: errorData.message || "You've reached the limit for free messages. Please sign up to continue chatting.",
+            type: "text",
+            intent: "general",
+            suggested_actions: ["Sign up now", "Learn more about pricing"]
+          })
+        }]);
+        setRemainingMessages(0);
+      } else {
+        // Fallback to local message if API fails
+        const confirmationMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant' as const,
+          content: JSON.stringify({
+            message: "Perfect! Your appointment has been successfully booked. You'll receive a confirmation email shortly. Is there anything else I can help you with today?",
+            type: 'text',
+            intent: 'general',
+            suggested_actions: ['Ask about services', 'Get contact information', 'End chat']
+          })
+        }
+        setMessages(prev => [...prev, confirmationMessage])
+      }
+    } catch (error) {
+      console.error('Error sending confirmation:', error)
+      // Fallback to local message
+      const confirmationMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant' as const,
+        content: JSON.stringify({
+          message: "Perfect! Your appointment has been successfully booked. You'll receive a confirmation email shortly. Is there anything else I can help you with today?",
+          type: 'text',
+          intent: 'general',
+          suggested_actions: ['Ask about services', 'Get contact information', 'End chat']
+        })
+      }
+      setMessages(prev => [...prev, confirmationMessage])
+    } finally {
+      setIsChatLoading(false)
+    }
   }
 
   const handleEndChat = async () => {
@@ -310,6 +404,21 @@ export default function ChatPage() {
       handleTriggerBooking()
       return
     }
+
+    // Check remaining messages before sending
+    if (remainingMessages <= 0) {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: JSON.stringify({
+          message: "You've reached the limit for free messages. Please sign up to continue chatting.",
+          type: "text",
+          intent: "general",
+          suggested_actions: ["Sign up now", "Learn more about pricing"]
+        })
+      }]);
+      return;
+    }
     
     // Create user message with the suggested action
     const userMessage = {
@@ -327,8 +436,7 @@ export default function ChatPage() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'X-Message-Count': (MAX_FREE_MESSAGES - remainingMessages).toString()
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
@@ -347,6 +455,25 @@ export default function ChatPage() {
         }
         
         setMessages(prev => [...prev, aiMessage])
+
+        // Update remaining from server response
+        if (typeof aiResponse.remainingMessages === 'number') {
+          setRemainingMessages(aiResponse.remainingMessages);
+        }
+      } else if (response.status === 429) {
+        // Handle rate limiting
+        const errorData = await response.json()
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: JSON.stringify({
+            message: errorData.message || "You've reached the limit for free messages. Please sign up to continue chatting.",
+            type: "text",
+            intent: "general",
+            suggested_actions: ["Sign up now", "Learn more about pricing"]
+          })
+        }]);
+        setRemainingMessages(0);
       } else {
         console.error('Chat API error:', response.status)
         setMessages(prev => [...prev, {
