@@ -2,6 +2,10 @@
 
 A platform that creates custom AI receptionist instances for different businesses. Build, deploy, and monitor AI-powered customer support with appointment booking capabilities.
 
+## 👥 Authors & Collaborators
+- **Edward Lampoh** - Software Developer & Collaborator
+- **Oluwafemi Adebayo, PhD** - Academic Professor & Collaborator
+
 ## 🎯 What We're Building
 
 This lab teaches you to create an **AI receptionist service** where:

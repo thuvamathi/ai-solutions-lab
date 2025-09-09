@@ -18,27 +18,89 @@ export async function GET(request: NextRequest) {
   }
 }
 
+async function extractTextFromFile(file: File): Promise<string> {
+  try {
+    if (file.type === 'application/pdf') {
+      const pdfToText = (await import('react-pdftotext')).default
+      return await pdfToText(file)
+    } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const mammoth = await import('mammoth')
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const result = await mammoth.extractRawText({ buffer })
+      return result.value
+    } else if (file.type === 'application/msword') {
+      const mammoth = await import('mammoth')
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const result = await mammoth.extractRawText({ buffer })
+      return result.value
+    } else if (file.type === 'text/plain' || file.type === 'text/markdown') {
+      return await file.text()
+    } else {
+      throw new Error(`Unsupported file type: ${file.type}`)
+    }
+  } catch (error: any) {
+    console.error('Error extracting text:', error)
+    throw new Error(`Failed to extract text from ${file.name}: ${error.message}`)
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const documentData = await request.json()
+    const formData = await request.formData()
+    const businessId = formData.get('business_id') as string
 
-    if (!documentData.business_id) {
+    if (!businessId) {
       return NextResponse.json({ error: "business_id is required" }, { status: 400 })
     }
 
-    const document = await createDocument({
-      business_id: documentData.business_id,
-      name: documentData.name,
-      type: documentData.type,
-      content: documentData.content,
-      file_url: documentData.file_url,
-      size: documentData.size,
-    })
+    // Check if this is a file upload (for DOC/DOCX) or pre-extracted content
+    const file = formData.get('file') as File
+    
+    if (file) {
+      // Server-side extraction for DOC/DOCX files
+      const extractedText = await extractTextFromFile(file)
 
-    return NextResponse.json(document, { status: 201 })
+      const document = await createDocument({
+        business_id: businessId,
+        name: file.name,
+        type: file.type,
+        content: extractedText,
+        size: file.size,
+      })
+
+      return NextResponse.json(document, { status: 201 })
+    } else {
+      // Pre-extracted content from client
+      const fileName = formData.get('file_name') as string
+      const fileType = formData.get('file_type') as string
+      const fileSizeStr = formData.get('file_size') as string
+      const content = formData.get('content') as string
+
+      if (!fileName || !fileType || !fileSizeStr || !content) {
+        return NextResponse.json({ error: "Missing required file information" }, { status: 400 })
+      }
+
+      const fileSize = parseInt(fileSizeStr, 10)
+      if (isNaN(fileSize)) {
+        return NextResponse.json({ error: "Invalid file size" }, { status: 400 })
+      }
+
+      const document = await createDocument({
+        business_id: businessId,
+        name: fileName,
+        type: fileType,
+        content: content,
+        size: fileSize,
+      })
+
+      return NextResponse.json(document, { status: 201 })
+    }
   } catch (error) {
     console.error("Error creating document:", error)
-    return NextResponse.json({ error: "Failed to upload document" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Failed to upload document", 
+      details: (error as Error).message 
+    }, { status: 500 })
   }
 }
 

@@ -3,6 +3,10 @@
 **Time Required:** 2-3 hours  
 **Objective:** Set up all required accounts and development tools, then run the complete application locally
 
+**Lab Collaborators:**
+- Edward Lampoh - Software Developer & Collaborator
+- Oluwafemi Adebayo, PhD - Academic Professor & Collaborator
+
 ---
 
 ## 📋 Lab 1 Checklist

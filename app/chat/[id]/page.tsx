@@ -241,7 +241,11 @@ export default function ChatPage() {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // On mobile, allow Enter to create new lines naturally
+    // Only submit on desktop with Enter (non-Shift)
+    const isMobile = window.innerWidth < 640 // sm breakpoint
+    
+    if (e.key === 'Enter' && !isMobile && !e.shiftKey) {
       e.preventDefault()
       handleSubmit()
     }
@@ -628,10 +632,10 @@ export default function ChatPage() {
       </header>
 
       {/* Main chat container */}
-      <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full px-6 py-6">
-        <div className="flex-1 bg-white rounded-3xl shadow-xl border border-gray-200/50 overflow-hidden flex flex-col">
+      <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-6">
+        <div className="flex-1 bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/50 overflow-hidden flex flex-col">
           {/* Chat header */}
-          <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
+          <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center gap-3">
               {mode === "booking" && (
                 <Button
@@ -663,7 +667,7 @@ export default function ChatPage() {
               <>
                 {/* Messages area */}
                 <div className="flex-1 overflow-y-auto bg-gray-50/30">
-                  <div className="p-6 space-y-6 min-h-full">
+                  <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-full">
                     {messages.map((message) => (
                       <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                         <div className={`flex gap-3 max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
@@ -737,16 +741,25 @@ export default function ChatPage() {
                 </div>
 
                 {/* Modern input area */}
-                <div className="bg-white border-t border-gray-100 p-6">
-                  <form onSubmit={handleSubmit} className="mb-4">
-                    <div className="relative flex items-end gap-3">
-                      <div className="flex-1 relative">
+                <div className="bg-white border-t border-gray-100 p-4 sm:p-6">
+                  {/* Message counter - moved outside form for better mobile layout */}
+                  <div className="flex justify-center mb-2 sm:mb-3">
+                    <div className="px-3 py-1 bg-gray-100 rounded-full">
+                      <span className="text-xs text-gray-500">
+                        {remainingMessages} / {MAX_FREE_MESSAGES} messages left
+                      </span>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="mb-3 sm:mb-4">
+                    <div className="flex items-end gap-2 sm:gap-3">
+                      <div className="flex-1">
                         <Textarea
                           value={input}
                           onChange={handleInputChange}
                           onKeyDown={handleKeyDown}
                           placeholder={`Ask ${businessData.name} anything...`}
-                          className="w-full px-4 py-3 pr-12 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400 resize-none min-h-[48px] max-h-32"
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400 resize-none min-h-[48px] max-h-32 overflow-hidden"
                           style={{ '--tw-ring-color': businessData.primary_color } as React.CSSProperties}
                           rows={1}
                         />
@@ -754,7 +767,7 @@ export default function ChatPage() {
                       <Button
                         type="submit"
                         disabled={!input.trim() || isChatLoading}
-                        className={`px-6 py-3 rounded-2xl text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`px-4 sm:px-6 py-2 sm:py-3 rounded-2xl text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
                           !input.trim() ? 'opacity-50' : 'hover:scale-105'
                         }`}
                         style={{ 
@@ -765,23 +778,17 @@ export default function ChatPage() {
                         {isChatLoading ? (
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         ) : (
-                          <Send className="h-4 w-4" />
+                          <Send className="h-3 w-3 sm:h-4 sm:w-4" />
                         )}
                       </Button>
-
-                      {/* Add message counter */}
-                      <div className="absolute right-16 sm:right-20 bottom-2 px-2 sm:px-3 py-1 bg-gray-100 rounded-full">
-                        <span className="text-xs text-gray-500">
-                          {remainingMessages} / {MAX_FREE_MESSAGES} left
-                        </span>
-                      </div>
                     </div>
                   </form>
                   
                   {/* Footer actions */}
                   <div className="flex items-center justify-between">
                     <div className="text-xs text-gray-400">
-                      Press Enter to send • Shift+Enter for new line
+                      <span className="hidden sm:inline">Press Enter to send • Shift+Enter for new line</span>
+                      <span className="sm:hidden">Tap send button or Enter for new line</span>
                     </div>
                     <Button
                       type="button"

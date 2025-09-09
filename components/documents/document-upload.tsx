@@ -41,6 +41,18 @@ export function DocumentUpload({ businessId, onUploadComplete }: DocumentUploadP
     })
   }, [businessId])
 
+  const extractTextFromFile = async (file: File): Promise<string> => {
+    if (file.type === 'application/pdf') {
+      const pdfToText = (await import('react-pdftotext')).default
+      return await pdfToText(file)
+    } else if (file.type === 'text/plain' || file.type === 'text/markdown') {
+      return await file.text()
+    } else {
+      // For DOC/DOCX files, we'll send them to the server for mammoth processing
+      return 'SERVER_EXTRACT'
+    }
+  }
+
   const uploadFile = async (fileId: string, file: File) => {
     const updateProgress = (progress: number, status: UploadedFile["status"], error?: string) => {
       setUploadedFiles((prev) =>
@@ -53,42 +65,54 @@ export function DocumentUpload({ businessId, onUploadComplete }: DocumentUploadP
 
       updateProgress(0, "uploading")
 
-      // Read file content
-      const content = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result as string)
-        reader.onerror = reject
-        reader.readAsText(file)
-      })
+      // Extract text from file client-side (if possible)
+      let extractedText = ""
+      let needsServerExtraction = false
+      
+      try {
+        updateProgress(10, "processing")
+        extractedText = await extractTextFromFile(file)
+        if (extractedText === 'SERVER_EXTRACT') {
+          needsServerExtraction = true
+        }
+        updateProgress(30, "uploading")
+      } catch (extractError) {
+        updateProgress(0, "error", `Failed to extract text: ${extractError instanceof Error ? extractError.message : 'Unknown error'}`)
+        return
+      }
 
-      updateProgress(50, "uploading")
+      // Create FormData for upload
+      const formData = new FormData()
+      if (needsServerExtraction) {
+        // Send file for server-side processing
+        formData.append('file', file)
+      } else {
+        // Send pre-extracted content
+        formData.append('file_name', file.name)
+        formData.append('file_type', file.type)
+        formData.append('file_size', file.size.toString())
+        formData.append('content', extractedText)
+      }
+      formData.append('business_id', businessId)
+
+      updateProgress(60, "uploading")
 
       // Upload to database
       const response = await fetch("/api/documents", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          business_id: businessId,
-          name: file.name,
-          type: file.type,
-          content: content,
-          size: file.size,
-        }),
+        body: formData,
       })
 
       updateProgress(90, "processing")
 
       if (response.ok) {
         updateProgress(100, "completed")
-        // Call onUploadComplete only for this specific file completion
         setTimeout(() => {
           onUploadComplete?.(uploadedFiles.filter((f) => f.status === "completed" || f.id === fileId))
         }, 100)
       } else {
-        const error = await response.text()
-        updateProgress(0, "error", error || "Upload failed")
+        const errorData = await response.json()
+        updateProgress(0, "error", errorData.details || errorData.error || "Upload failed")
       }
     } catch (error) {
       updateProgress(0, "error", error instanceof Error ? error.message : "Upload failed")
