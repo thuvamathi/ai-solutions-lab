@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -118,7 +118,8 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [isChatLoading, setIsChatLoading] = useState(false)
   const [isEndingChat, setIsEndingChat] = useState(false)
-  const [remainingMessages, setRemainingMessages] = useState(MAX_FREE_MESSAGES);
+  const [remainingMessages, setRemainingMessages] = useState(MAX_FREE_MESSAGES)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Add initial greeting when business data is loaded
   useEffect(() => {
@@ -166,6 +167,12 @@ export default function ChatPage() {
     setMessages(prev => [...prev, userMessage])
     const currentInput = input
     setInput('')
+    
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '48px'
+    }
+    
     setIsChatLoading(true)
 
     try {
@@ -236,8 +243,22 @@ export default function ChatPage() {
     }
   }
 
+  const resizeTextarea = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'auto'
+    
+    // Calculate max height (50% of viewport height)
+    const maxHeight = window.innerHeight * 0.5
+    const minHeight = 48 // minimum height in pixels
+    
+    let newHeight = Math.max(textarea.scrollHeight, minHeight)
+    newHeight = Math.min(newHeight, maxHeight)
+    
+    textarea.style.height = `${newHeight}px`
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
+    resizeTextarea(e.target)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -755,12 +776,16 @@ export default function ChatPage() {
                     <div className="flex items-end gap-2 sm:gap-3">
                       <div className="flex-1">
                         <Textarea
+                          ref={textareaRef}
                           value={input}
                           onChange={handleInputChange}
                           onKeyDown={handleKeyDown}
                           placeholder={`Ask ${businessData.name} anything...`}
-                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400 resize-none min-h-[48px] max-h-32 overflow-hidden"
-                          style={{ '--tw-ring-color': businessData.primary_color } as React.CSSProperties}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-sm placeholder:text-gray-400 resize-none min-h-[48px] overflow-y-auto transition-all duration-200 ease-in-out"
+                          style={{ 
+                            '--tw-ring-color': businessData.primary_color,
+                            height: '48px' // Initial height
+                          } as React.CSSProperties}
                           rows={1}
                         />
                       </div>
