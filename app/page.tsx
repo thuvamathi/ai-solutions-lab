@@ -525,7 +525,7 @@ export default function HomePage() {
           </div>
 
           <div className="border-t border-gray-200 mt-12 pt-8 text-center text-sm text-gray-600">
-            <p>&copy; 2024 ReceptionistAI. All rights reserved.</p>
+            <p>&copy; 2025 <a href="https://leverlabs.co" className="hover:underline">Leverlabs</a>. All rights reserved.</p>
           </div>
         </div>
       </footer>
