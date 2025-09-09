@@ -148,27 +148,24 @@ export async function getConversationsByBusiness(businessId: string) {
 }
 
 export async function updateConversation(id: string, updates: Partial<Conversation>) {
-  const setClause = Object.keys(updates)
-    .filter((key) => key !== "id" && key !== "created_at" && key !== "updated_at")
-    .map((key) => `${key} = $${Object.keys(updates).indexOf(key) + 2}`)
-    .join(", ")
+  const filteredUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([key]) => 
+      key !== "id" && key !== "created_at" && key !== "updated_at"
+    )
+  )
 
-  if (!setClause) return null
+  if (Object.keys(filteredUpdates).length === 0) return null
 
-  const values = [
-    id,
-    ...Object.values(updates).filter((_, index) => {
-      const key = Object.keys(updates)[index]
-      return key !== "id" && key !== "created_at" && key !== "updated_at"
-    }),
-  ]
+  // Build the query dynamically using proper sql template literals
+  let query = sql`UPDATE conversations SET updated_at = NOW()`
+  
+  for (const [key, value] of Object.entries(filteredUpdates)) {
+    query = sql`${query}, ${sql.unsafe(key)} = ${value}`
+  }
+  
+  query = sql`${query} WHERE id = ${id} RETURNING *`
 
-  const result = await sql`
-    UPDATE conversations 
-    SET ${sql.unsafe(setClause)}, updated_at = NOW()
-    WHERE id = ${id}
-    RETURNING *
-  `
+  const result = await query
   return result[0] as Conversation | undefined
 }
 
