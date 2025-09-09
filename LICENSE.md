@@ -2,6 +2,8 @@
 
 Copyright (c) 2025 Edward Lampoh
 
+**Collaborator:** Oluwafemi Adebayo, PhD
+
 This software and associated documentation files (the "Software") are available under two licensing options:
 
 ## Educational License (Free)
@@ -37,6 +39,6 @@ For commercial use, white-label rights, redistribution, or any business applicat
 
 THE SOFTWARE IS PROVIDED "AS IS" FOR EDUCATIONAL PURPOSES ONLY, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
-**Attribution Required:** When using this software for educational purposes or portfolio demonstration, you must include attribution to Edward Lampoh and link to the original repository.
+**Attribution Required:** When using this software for educational purposes or portfolio demonstration, you must include attribution to Edward Lampoh and Oluwafemi Adebayo, PhD, and link to the original repository.
 
 **Questions?** Contact eddy@leverlabs.co for licensing inquiries.
