@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { MessageSquare, Send, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { useChat } from "ai/react"
 import { AppointmentBooking } from "@/components/appointments/appointment-booking"
 import { getRemainingMessages, incrementMessageCount, MAX_FREE_MESSAGES } from '@/lib/rate-limit';
 
