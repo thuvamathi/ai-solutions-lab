@@ -1,7 +1,7 @@
 # Lab 1: Environment Setup & Project Introduction
 
 **Time Required:** 2-3 hours  
-**Objective:** Set up all required accounts and development tools, then run the complete application locally
+**What You'll Do:** Create accounts for the services we need, install coding tools on your computer, and get the AI receptionist app running on your machine
 
 **Lab Collaborators:**
 - Edward Lampoh - Software Developer & Collaborator
@@ -9,92 +9,145 @@
 
 ---
 
-## 📋 Lab 1 Checklist
+## 🎯 Lab Overview
 
-### **Part A: Account Setup**
-- [ ] Create GitHub account and configure Git
-- [ ] Sign up for Google Cloud and get Gemini API key
+This lab has 3 main parts. **Complete each part fully before moving to the next.**
+
+<details>
+<summary><strong>📋 Full Checklist (Click to expand)</strong></summary>
+
+### **Part A: Create Your Accounts**
+- [ ] Create GitHub account and connect it to Git
+- [ ] Sign up for Google Gemini API key
 - [ ] Create AWS account (free tier)
-- [ ] Sign up for Neon database and create project
+- [ ] Sign up for Neon database
 - [ ] Sign up for Resend email service
 
-### **Part B: Development Tools**
-- [ ] Install Node.js and npm/pnpm
+### **Part B: Install Development Tools**
+- [ ] Install Node.js and npm
 - [ ] Install Python 3.9+
 - [ ] Install Git
-- [ ] Install code editor (VS Code recommended)
+- [ ] Install VS Code
 
 ### **Part C: Project Setup**
 - [ ] Fork and clone repository
 - [ ] Install dependencies
 - [ ] Configure environment variables
 - [ ] Run application locally
-- [ ] Test complete free trial flow
+- [ ] Test complete flow
 
-### **Part D: Optional (Can be done later)**
-- [ ] Install Docker Desktop
+</details>
 
 ---
 
-## Part A: Account Setup
+<details open>
+<summary><h2>🔐 Part A: Create Your Accounts</h2></summary>
 
-### 1. GitHub Setup
+*All these services have free tiers - you won't pay anything during this course.*
+
+<details>
+<summary><h3>1. GitHub Setup</h3></summary>
 
 **Create Account:**
-1. Go to [github.com](https://github.com) and sign up
-2. Use your student email if available
-3. Choose a professional username
+1. Go to [github.com](https://github.com) and click "Sign up"
+2. Use your student email if available (gets you free GitHub Pro features!)
+3. Choose a professional username (you'll use this publicly)
+4. Verify your email address
 
-**Configure Git:**
+**Connect Git to GitHub:**
+
+**📺 Watch First:** [Complete Git & GitHub Setup Tutorial](https://youtu.be/AdzKzlp66sQ?si=_B-0h1qM3OIV3bn5) - Follow along with this video for a visual walkthrough.
+
+**Quick Setup Commands:**
 ```bash
+# Tell Git your name (use your real name)
 git config --global user.name "Your Full Name"
+
+# Tell Git your email (use the SAME email as your GitHub account)
 git config --global user.email "your.email@example.com"
 ```
 
-### 2. Google Cloud Platform
+**Test Your Connection:**
+```bash
+# This should show your name and email
+git config --global --list
+```
 
-**Sign Up:**
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Sign up with your Google account
-3. Accept free tier ($300 credit)
+**✅ Success Check:** If you see your name and email listed, you're ready to go!
 
-**Get Gemini API Key:**
-1. Create new project or use default
-2. Enable Gemini API
-3. Go to "Credentials" → "Create API Key"
-4. **Save this key** - you'll need it later
+</details>
 
-### 3. AWS Account
+<details>
+<summary><h3>2. Google Gemini API</h3></summary>
+
+**What You Need:**
+- A Gmail or Google account (most people already have this!)
+
+**Get Your AI Key:**
+1. Search "google gemini api" in your browser
+2. Click on the "Google AI Studio" link that appears
+3. Sign in with your Google account
+4. Click "Get Started"
+5. Click "Get a new API key"
+6. Follow the instructions to create your key
+7. **Copy and save this key somewhere safe**
+
+</details>
+
+<details>
+<summary><h3>3. AWS Account</h3></summary>
 
 **Sign Up:**
 1. Go to [aws.amazon.com](https://aws.amazon.com)
-2. Create free tier account
-3. Verify phone number and payment method
-4. Choose "Basic Support - Free"
+2. Click "Create a Free Account"
+3. You'll need to verify your phone number and add a payment method (but you won't be charged)
+4. Choose "Basic Support - Free" when asked
 
-**Note:** We'll use AWS later in the course for deployment
+**Note:** We'll only use free services! This is for later when we deploy your app.
 
-### 4. Neon Database
+</details>
+
+<details>
+<summary><h3>4. Neon Database</h3></summary>
 
 **Sign Up:**
 1. Go to [neon.tech](https://neon.tech)
-2. Sign up with GitHub (recommended)
-3. Create new project: "ai-receptionist-lab"
-4. **Save the connection string** - you'll need it
+2. Click "Sign up with GitHub" (easiest option)
+3. Create a new project and name it: "ai-receptionist-lab"
+4. **Copy and save the connection string**
 
-### 5. Resend Email Service
+</details>
+
+<details>
+<summary><h3>5. Resend Email Service</h3></summary>
 
 **Sign Up:**
 1. Go to [resend.com](https://resend.com)
-2. Sign up for free account
-3. Get API key from dashboard
-4. **Save this key** - you'll need it later
+2. Sign up for a free account
+3. Once logged in, get your API key from the dashboard
+4. **Save this key**
 
----
+</details>
 
-## Part B: Install Development Tools
+### ✅ Part A Completion Check
 
-### Node.js Installation
+**Before proceeding to Part B, ensure you have:**
+- [ ] GitHub account created and Git configured
+- [ ] Google Gemini API key saved
+- [ ] AWS account created
+- [ ] Neon database project created with connection string saved
+- [ ] Resend API key saved
+
+**Have all 5 items checked?** → Proceed to Part B
+**Missing something?** → Complete the missing steps above
+
+</details>
+
+<details>
+<summary><h2>💻 Part B: Install Development Tools</h2></summary>
+
+<details>
+<summary><h3>1. Node.js Installation</h3></summary>
 
 **All Platforms:**
 1. Go to [nodejs.org](https://nodejs.org)
@@ -107,7 +160,10 @@ node --version
 npm --version
 ```
 
-### Python Installation
+</details>
+
+<details>
+<summary><h3>2. Python Installation</h3></summary>
 
 **Windows:**
 1. Go to [python.org/downloads](https://python.org/downloads)
@@ -131,7 +187,10 @@ python --version  # or python3 --version
 pip --version      # or pip3 --version
 ```
 
-### Git Installation
+</details>
+
+<details>
+<summary><h3>3. Git Installation</h3></summary>
 
 **Windows:**
 1. Download from [git-scm.com](https://git-scm.com)
@@ -153,7 +212,10 @@ sudo apt install git
 git --version
 ```
 
-### Code Editor (Recommended)
+</details>
+
+<details>
+<summary><h3>4. Code Editor (Recommended)</h3></summary>
 
 **Visual Studio Code:**
 1. Download from [code.visualstudio.com](https://code.visualstudio.com)
@@ -162,55 +224,63 @@ git --version
    - JavaScript ES6 code snippets
    - Prettier - Code formatter
 
----
+</details>
 
-## Part C: Project Setup
+### ✅ Part B Completion Check
 
-### 1. Fork Repository
+**Before proceeding to Part C, ensure you have:**
+- [ ] Node.js and npm installed and verified
+- [ ] Python 3.9+ installed and verified
+- [ ] Git installed and verified
+- [ ] VS Code installed with recommended extensions
 
-**Why Fork?** You'll be making changes throughout the course and need your own copy to work with.
+**Have all 4 items checked?** → Proceed to Part C
+**Missing something?** → Complete the missing steps above
 
-1. Go to the lab repository: https://github.com/edielam/ai-solutions-lab
-2. Click the **"Fork"** button in the top-right corner
+</details>
+
+<details>
+<summary><h2>🚀 Part C: Project Setup</h2></summary>
+
+<details>
+<summary><h3>1. Fork Repository</h3></summary>
+
+**Why Fork?** You need your own copy to make changes throughout the course.
+
+1. Go to: https://github.com/edielam/ai-solutions-lab
+2. Click the **"Fork"** button (top-right corner)
 3. This creates your personal copy at `https://github.com/YOUR_USERNAME/ai-solutions-lab`
-4. You now have full control over your version of the code
-5. **Throughout the course:** All commits and changes go to YOUR fork, not the original repo
 
-### 2. Clone Your Fork
+</details>
+
+<details>
+<summary><h3>2. Clone Your Fork</h3></summary>
 
 **Important:** Clone YOUR fork, not the original repository!
 
 ```bash
-# Clone YOUR fork (replace YOUR_USERNAME with your actual GitHub username)
+# Replace YOUR_USERNAME with your actual GitHub username
 git clone https://github.com/YOUR_USERNAME/ai-solutions-lab.git
 cd ai-solutions-lab
 ```
 
-### 3. Install Dependencies
+</details>
+
+<details>
+<summary><h3>3. Install Dependencies</h3></summary>
 
 **Frontend (Next.js):**
 ```bash
 npm install
-# or if you prefer pnpm:
-pnpm install
 ```
 
 **Backend (Python):**
-```bash
-# Create virtual environment
-python -m venv venv
+*No backend setup needed for Lab 1 - we'll do this in later labs.*
 
-# Activate it
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
+</details>
 
-# Install packages
-pip install -r requirements.txt
-```
-
-### 4. Environment Configuration
+<details>
+<summary><h3>4. Environment Configuration</h3></summary>
 
 Create `.env` file in the root directory:
 
@@ -218,7 +288,7 @@ Create `.env` file in the root directory:
 # Database (from Neon)
 DATABASE_URL=your_neon_connection_string_here
 
-# AI API (from Google Cloud)
+# AI API (from Google)
 GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key_here
 
 # Email Service (from Resend)
@@ -230,7 +300,10 @@ SECRET_KEY=change_this_to_something_secure
 DEBUG=true
 ```
 
-### 5. Run the Application
+</details>
+
+<details>
+<summary><h3>5. Run the Application</h3></summary>
 
 **Start Frontend:**
 ```bash
@@ -240,7 +313,10 @@ npm run dev
 **Open Browser:**
 Go to [http://localhost:3000](http://localhost:3000)
 
-### 6. Test the Free Trial Flow
+</details>
+
+<details>
+<summary><h3>6. Test the Complete Flow</h3></summary>
 
 1. **Landing Page**: Click "TRY IT FREE - NO SIGNUP"
 2. **Business Setup**: 
@@ -258,9 +334,29 @@ Go to [http://localhost:3000](http://localhost:3000)
    - Try booking an appointment
    - Verify emails are sent (check spam folder)
 
+</details>
+
+### ✅ Part C Completion Check
+
+**Before completing Lab 1, ensure you have:**
+- [ ] Forked the repository to your GitHub account
+- [ ] Cloned your fork to your computer
+- [ ] Installed frontend dependencies
+- [ ] Created `.env` file with all API keys
+- [ ] Application runs at http://localhost:3000
+- [ ] Free trial flow works end-to-end
+- [ ] Chat interface responds to messages
+- [ ] Appointment booking functions
+
+**Have all 8 items checked?** → Lab 1 Complete! 🎉
+**Missing something?** → Complete the missing steps above
+
+</details>
+
 ---
 
-## Part D: Docker Setup (Optional - Can Skip for Now)
+<details>
+<summary><h2>🐳 Part D: Docker Setup (Optional)</h2></summary>
 
 **Install Docker Desktop:**
 1. Go to [docker.com/get-started](https://docker.com/get-started)
@@ -275,23 +371,12 @@ docker run hello-world
 
 **Note:** We'll use Docker in Lab 5 for containerization
 
----
-
-## ✅ Verification Checklist
-
-Before moving to Lab 2, ensure:
-
-- [ ] All accounts created with API keys saved
-- [ ] Application runs at http://localhost:3000
-- [ ] Free trial flow works end-to-end
-- [ ] Chat interface responds to messages
-- [ ] Appointment booking flow functions
-- [ ] Environment variables configured correctly
-- [ ] Git setup complete with your fork
+</details>
 
 ---
 
-## 🚨 Troubleshooting
+<details>
+<summary><h2>🚨 Troubleshooting</h2></summary>
 
 **"npm install" fails:**
 - Try deleting `node_modules` and `package-lock.json`, then run `npm install` again
@@ -306,11 +391,13 @@ Before moving to Lab 2, ensure:
 
 **API key not working:**
 - Double-check the key is copied correctly
-- Verify the API is enabled in Google Cloud Console
+
+</details>
 
 ---
 
-## 📚 Next Steps
+<details>
+<summary><h2>📚 Next Steps & Pro Tips</h2></summary>
 
 **Prepare for Lab 2:**
 - Keep all your API keys handy
@@ -320,10 +407,9 @@ Before moving to Lab 2, ensure:
 
 **Ready for Lab 2?** You'll integrate real AI capabilities and start tracking performance with MLflow!
 
----
-
-## 💡 Pro Tips
-
+**💡 Pro Tips:**
 - **Save your API keys securely** - never commit them to Git
 - **Use meaningful commit messages** when pushing code
 - **Test thoroughly** - the free trial flow is what your users will experience
+
+</details>
