@@ -56,7 +56,10 @@ This lab has 3 main parts. **Complete each part fully before moving to the next.
 
 **Connect Git to GitHub:**
 
-**📺 Watch First:** [Complete Git & GitHub Setup Tutorial](https://youtu.be/AdzKzlp66sQ?si=_B-0h1qM3OIV3bn5) - Follow along with this video for a visual walkthrough.
+**📺 Video Tutorials by Platform:**
+- **Windows:** [Git & GitHub Setup Tutorial](https://youtu.be/AdzKzlp66sQ?si=_B-0h1qM3OIV3bn5)
+- **Mac:** [Git & GitHub Setup for Mac](https://www.youtube.com/watch?v=p0Js7IF17yI)
+- **Linux:** [Git & GitHub Setup for Linux](https://www.youtube.com/watch?v=bc3_FL9zWWs)
 
 **Quick Setup Commands:**
 ```bash
