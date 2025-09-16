@@ -1,0 +1,52 @@
+# DVC Parameters Configuration
+# Lab 2: AI Lifecycle & MLOps Integration
+#
+# This file defines parameters for our DVC pipeline stages
+# Parameters help make our ML workflows reproducible and configurable
+
+# Document processing parameters
+process_documents:
+  # Maximum file size to process (in MB)
+  max_file_size_mb: 10
+  
+  # Supported document types
+  supported_formats:
+    - "pdf"
+    - "docx" 
+    - "txt"
+    - "md"
+  
+  # Text processing settings
+  min_text_length: 50
+  max_text_length: 50000
+  
+  # Embedding model settings
+  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+  embedding_dimension: 384
+
+# Document validation parameters  
+validate_documents:
+  # Quality thresholds
+  min_readability_score: 0.3
+  min_coherence_score: 0.4
+  
+  # Content validation
+  min_unique_sentences: 5
+  max_duplicate_percentage: 0.2
+  
+  # Language detection
+  expected_language: "en"
+  language_confidence_threshold: 0.8
+
+# Knowledge base update parameters
+update_knowledge_base:
+  # Similarity thresholds for document clustering
+  similarity_threshold: 0.85
+  
+  # Knowledge base optimization
+  max_documents_per_topic: 10
+  enable_document_summarization: true
+  
+  # Update strategy
+  incremental_update: true
+  backup_previous_version: true

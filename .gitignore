@@ -27,3 +27,11 @@ yarn-error.log*
 next-env.d.ts
 devmap.md
 lab-materials/
+venv/
+mlruns/
+test-basic-mlops2.js
+test-lab2-integration2.js
+test-prometheus-integration2.js
+
+LAB2-README.md
+dvc.yaml

@@ -1,0 +1,51 @@
+# DVC Pipeline Configuration
+# Lab 2: AI Lifecycle & MLOps Integration
+#
+# DVC (Data Version Control) helps us track changes to business documents
+# and maintain reproducible AI training/inference pipelines
+#
+# Key Learning Objectives:
+# - Understanding data versioning in ML projects
+# - Tracking business document changes
+# - Maintaining reproducible AI workflows
+
+stages:
+  # Stage 1: Process business documents
+  process_documents:
+    cmd: python scripts/process_documents.py
+    deps:
+      - data/raw/business_documents/
+      - scripts/process_documents.py
+    outs:
+      - data/processed/document_embeddings.json
+      - data/processed/document_metadata.json
+    metrics:
+      - metrics/document_processing.json
+    params:
+      - params.yaml:process_documents
+    
+  # Stage 2: Validate document quality
+  validate_documents:
+    cmd: python scripts/validate_documents.py
+    deps:
+      - data/processed/document_embeddings.json
+      - data/processed/document_metadata.json
+      - scripts/validate_documents.py
+    metrics:
+      - metrics/document_validation.json
+    params:
+      - params.yaml:validate_documents
+
+  # Stage 3: Update AI knowledge base
+  update_knowledge_base:
+    cmd: python scripts/update_knowledge_base.py
+    deps:
+      - data/processed/document_embeddings.json
+      - data/processed/document_metadata.json
+      - scripts/update_knowledge_base.py
+    outs:
+      - data/knowledge_base/current_kb.json
+    metrics:
+      - metrics/knowledge_base_update.json
+    params:
+      - params.yaml:update_knowledge_base
