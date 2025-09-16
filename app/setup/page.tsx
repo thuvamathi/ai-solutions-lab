@@ -70,9 +70,14 @@ export default function SetupPage() {
           <div className="h-2 w-2 rounded-full bg-black"></div>
           <div className="h-2 w-2 rounded-full bg-black"></div>
         </div>
-        <Link href="/" className="text-sm text-black hover:underline">
-          BACK TO HOME
-        </Link>
+        <div className="flex items-center space-x-6">
+          <Link href="/labs" className="text-sm text-black hover:underline">
+            LABS
+          </Link>
+          <Link href="/" className="text-sm text-black hover:underline">
+            BACK TO HOME
+          </Link>
+        </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-6 py-12">

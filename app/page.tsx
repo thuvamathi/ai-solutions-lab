@@ -1,21 +1,44 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MessageSquare, Calendar, Clock, Users, Zap, Shield, Check, Star } from "lucide-react"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  MessageSquare,
+  Calendar,
+  Clock,
+  Users,
+  Zap,
+  Shield,
+  Check,
+  Star,
+} from "lucide-react";
+import Link from "next/link";
 // import { EnhancedChatWidget } from "@/components/chat/enhanced-chat-widget"
-import Image from "next/image"
+import Image from "next/image";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#dfe2e2]">
       <header className="flex items-center justify-between p-6">
         <div className="flex space-x-2">
-          <div className="h-2 w-2 rounded-full bg-black" title="Decorative element"></div>
-          <div className="h-2 w-2 rounded-full bg-black" title="Decorative element"></div>
+          <div
+            className="h-2 w-2 rounded-full bg-black"
+            title="Decorative element"
+          ></div>
+          <div
+            className="h-2 w-2 rounded-full bg-black"
+            title="Decorative element"
+          ></div>
         </div>
         <div className="flex items-center space-x-6">
           {/* <button className="text-sm text-black">EN</button> */}
+          {/* <Link href="/labs" className="text-sm text-black hover:underline">
+            LABS
+          </Link> */}
           <Link href="/contact" className="text-sm text-black hover:underline">
             CONTACT US
           </Link>
@@ -29,7 +52,7 @@ export default function HomePage() {
         </div>
       </header>
 
-<main className="px-6 pt-12">
+      <main className="px-6 pt-12">
         {/* Hero Section - Side by side layout */}
         <div className="flex flex-col lg:flex-row lg:items-start gap-8">
           {/* Left Content - Hero Text */}
@@ -56,9 +79,11 @@ export default function HomePage() {
                   <div className="flex-shrink-0 w-2 h-2 bg-emerald-500 rounded-full mt-3"></div>
                   <div>
                     <p className="lg:text-base text-sm leading-relaxed text-gray-800 font-medium">
-                      Your always-on AI assistant that engages customers, answers questions, 
-                      and seamlessly books appointments. Perfect for dental offices, law firms, 
-                      consultancy services, and any business that needs professional customer service.
+                      Your always-on AI assistant that engages customers,
+                      answers questions, and seamlessly books appointments.
+                      Perfect for dental offices, law firms, consultancy
+                      services, and any business that needs professional
+                      customer service.
                     </p>
                   </div>
                 </div>
@@ -96,8 +121,8 @@ export default function HomePage() {
                   >
                     <source src="/chat-vid.mp4" type="video/mp4" />
                     {/* Fallback image for browsers that don't support video */}
-                    <Image 
-                      src="/chat2.png" 
+                    <Image
+                      src="/chat2.png"
                       alt="AI receptionist demonstration"
                       fill
                       className="object-cover"
@@ -123,10 +148,12 @@ export default function HomePage() {
             <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm">
               <CardHeader className="p-8">
                 <MessageSquare className="h-8 w-8 mb-6" />
-                <CardTitle className="text-lg font-normal">Intelligent Chat Assistant</CardTitle>
+                <CardTitle className="text-lg font-normal">
+                  Intelligent Chat Assistant
+                </CardTitle>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  AI-powered conversations that understand your business and provide accurate answers from your
-                  documents.
+                  AI-powered conversations that understand your business and
+                  provide accurate answers from your documents.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -134,9 +161,12 @@ export default function HomePage() {
             <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm">
               <CardHeader className="p-8">
                 <Calendar className="h-8 w-8 mb-6" />
-                <CardTitle className="text-lg font-normal">Smart Appointment Booking</CardTitle>
+                <CardTitle className="text-lg font-normal">
+                  Smart Appointment Booking
+                </CardTitle>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  Seamlessly transition from chat to booking when customers need human assistance or consultations.
+                  Seamlessly transition from chat to booking when customers need
+                  human assistance or consultations.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -144,10 +174,12 @@ export default function HomePage() {
             <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm">
               <CardHeader className="p-8">
                 <Clock className="h-8 w-8 mb-6" />
-                <CardTitle className="text-lg font-normal">24/7 Availability</CardTitle>
+                <CardTitle className="text-lg font-normal">
+                  24/7 Availability
+                </CardTitle>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  Never miss a potential customer. Your AI receptionist works around the clock, even when you're
-                  sleeping.
+                  Never miss a potential customer. Your AI receptionist works
+                  around the clock, even when you're sleeping.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -155,9 +187,12 @@ export default function HomePage() {
             <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm">
               <CardHeader className="p-8">
                 <Users className="h-8 w-8 mb-6" />
-                <CardTitle className="text-lg font-normal">Multi-Business Ready</CardTitle>
+                <CardTitle className="text-lg font-normal">
+                  Multi-Business Ready
+                </CardTitle>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  Perfect for healthcare, legal, consulting, and service-based businesses of all sizes.
+                  Perfect for healthcare, legal, consulting, and service-based
+                  businesses of all sizes.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -165,9 +200,12 @@ export default function HomePage() {
             <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm">
               <CardHeader className="p-8">
                 <Zap className="h-8 w-8 mb-6" />
-                <CardTitle className="text-lg font-normal">Instant Setup</CardTitle>
+                <CardTitle className="text-lg font-normal">
+                  Instant Setup
+                </CardTitle>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  Upload your business documents and get your AI receptionist running in minutes, not hours.
+                  Upload your business documents and get your AI receptionist
+                  running in minutes, not hours.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -175,9 +213,12 @@ export default function HomePage() {
             <Card className="border-0 bg-white/50 backdrop-blur-sm shadow-sm">
               <CardHeader className="p-8">
                 <Shield className="h-8 w-8 mb-6" />
-                <CardTitle className="text-lg font-normal">Secure & Compliant</CardTitle>
+                <CardTitle className="text-lg font-normal">
+                  Secure & Compliant
+                </CardTitle>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  Enterprise-grade security with HIPAA compliance options for healthcare and sensitive industries.
+                  Enterprise-grade security with HIPAA compliance options for
+                  healthcare and sensitive industries.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -194,9 +235,12 @@ export default function HomePage() {
               <div className="w-12 h-12 border border-black rounded-full flex items-center justify-center text-lg font-light mb-6">
                 1
               </div>
-              <h3 className="text-lg font-normal mb-4">Upload Your Documents</h3>
+              <h3 className="text-lg font-normal mb-4">
+                Upload Your Documents
+              </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Add your FAQs, service descriptions, policies, and any business information your AI should know.
+                Add your FAQs, service descriptions, policies, and any business
+                information your AI should know.
               </p>
             </div>
 
@@ -204,9 +248,12 @@ export default function HomePage() {
               <div className="w-12 h-12 border border-black rounded-full flex items-center justify-center text-lg font-light mb-6">
                 2
               </div>
-              <h3 className="text-lg font-normal mb-4">Customers Chat & Get Answers</h3>
+              <h3 className="text-lg font-normal mb-4">
+                Customers Chat & Get Answers
+              </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Visitors ask questions and receive instant, accurate responses based on your business knowledge.
+                Visitors ask questions and receive instant, accurate responses
+                based on your business knowledge.
               </p>
             </div>
 
@@ -214,9 +261,12 @@ export default function HomePage() {
               <div className="w-12 h-12 border border-black rounded-full flex items-center justify-center text-lg font-light mb-6">
                 3
               </div>
-              <h3 className="text-lg font-normal mb-4">Seamless Appointment Booking</h3>
+              <h3 className="text-lg font-normal mb-4">
+                Seamless Appointment Booking
+              </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                When needed, customers easily book appointments through an integrated calendar system.
+                When needed, customers easily book appointments through an
+                integrated calendar system.
               </p>
             </div>
           </div>
@@ -236,7 +286,8 @@ export default function HomePage() {
                   ))}
                 </div>
                 <CardDescription className="text-gray-600 leading-relaxed mb-6">
-                  "ReceptionistAI has revolutionized our patient intake process. We're booking 40% more appointments."
+                  "ReceptionistAI has revolutionized our patient intake process.
+                  We're booking 40% more appointments."
                 </CardDescription>
                 <div>
                   <p className="font-normal text-sm">Dr. Sarah Chen</p>
@@ -253,12 +304,14 @@ export default function HomePage() {
                   ))}
                 </div>
                 <CardDescription className="text-gray-600 leading-relaxed mb-6">
-                  "Our law firm handles complex cases, and ReceptionistAI perfectly captures our expertise in
-                  responses."
+                  "Our law firm handles complex cases, and ReceptionistAI
+                  perfectly captures our expertise in responses."
                 </CardDescription>
                 <div>
                   <p className="font-normal text-sm">Michael Rodriguez</p>
-                  <p className="text-xs text-gray-500">Rodriguez & Associates Law</p>
+                  <p className="text-xs text-gray-500">
+                    Rodriguez & Associates Law
+                  </p>
                 </div>
               </CardHeader>
             </Card>
@@ -271,11 +324,14 @@ export default function HomePage() {
                   ))}
                 </div>
                 <CardDescription className="text-gray-600 leading-relaxed mb-6">
-                  "The setup was incredibly easy. Our consultation bookings have tripled within hours."
+                  "The setup was incredibly easy. Our consultation bookings have
+                  tripled within hours."
                 </CardDescription>
                 <div>
                   <p className="font-normal text-sm">Emma Thompson</p>
-                  <p className="text-xs text-gray-500">Thompson Business Consulting</p>
+                  <p className="text-xs text-gray-500">
+                    Thompson Business Consulting
+                  </p>
                 </div>
               </CardHeader>
             </Card>
@@ -295,7 +351,9 @@ export default function HomePage() {
                   <span className="text-3xl font-light">$29</span>
                   <span className="text-gray-600">/month</span>
                 </div>
-                <CardDescription className="mt-4 text-gray-600">Perfect for small businesses</CardDescription>
+                <CardDescription className="mt-4 text-gray-600">
+                  Perfect for small businesses
+                </CardDescription>
               </CardHeader>
               <div className="px-8 pb-8 flex-1 flex flex-col">
                 <ul className="space-y-3 text-sm flex-1">
@@ -331,12 +389,16 @@ export default function HomePage() {
                 <Badge className="bg-black text-white">Most Popular</Badge>
               </div>
               <CardHeader className="p-8 text-center">
-                <CardTitle className="text-xl font-normal">Professional</CardTitle>
+                <CardTitle className="text-xl font-normal">
+                  Professional
+                </CardTitle>
                 <div className="mt-6">
                   <span className="text-3xl font-light">$79</span>
                   <span className="text-gray-600">/month</span>
                 </div>
-                <CardDescription className="mt-4 text-gray-600">Ideal for growing businesses</CardDescription>
+                <CardDescription className="mt-4 text-gray-600">
+                  Ideal for growing businesses
+                </CardDescription>
               </CardHeader>
               <div className="px-8 pb-8 flex-1 flex flex-col">
                 <ul className="space-y-3 text-sm flex-1">
@@ -361,7 +423,10 @@ export default function HomePage() {
                     <span>Analytics dashboard</span>
                   </li>
                 </ul>
-                <Button className="w-full mt-6 bg-black text-white hover:bg-gray-800" asChild>
+                <Button
+                  className="w-full mt-6 bg-black text-white hover:bg-gray-800"
+                  asChild
+                >
                   <Link href="/setup">Try It Free</Link>
                 </Button>
               </div>
@@ -369,12 +434,16 @@ export default function HomePage() {
 
             <Card className="border border-gray-200 bg-white/70 backdrop-blur-sm flex flex-col">
               <CardHeader className="p-8 text-center">
-                <CardTitle className="text-xl font-normal">Enterprise</CardTitle>
+                <CardTitle className="text-xl font-normal">
+                  Enterprise
+                </CardTitle>
                 <div className="mt-6">
                   <span className="text-3xl font-light">$199</span>
                   <span className="text-gray-600">/month</span>
                 </div>
-                <CardDescription className="mt-4 text-gray-600">For large organizations</CardDescription>
+                <CardDescription className="mt-4 text-gray-600">
+                  For large organizations
+                </CardDescription>
               </CardHeader>
               <div className="px-8 pb-8 flex-1 flex flex-col">
                 <ul className="space-y-3 text-sm flex-1">
@@ -419,8 +488,8 @@ export default function HomePage() {
             YOUR CUSTOMER EXPERIENCE?
           </h2>
           <p className="text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join hundreds of businesses already using ReceptionistAI to provide better customer service and book more
-            appointments.
+            Join hundreds of businesses already using ReceptionistAI to provide
+            better customer service and book more appointments.
           </p>
           <Button
             className="rounded-full border-2 border-black px-12 py-3 bg-white text-black hover:bg-black hover:text-white"
@@ -440,8 +509,8 @@ export default function HomePage() {
                 <span className="text-lg font-normal">ReceptionistAI</span>
               </div>
               <p className="text-gray-600 text-sm leading-relaxed">
-                The smart digital receptionist that transforms how businesses handle customer inquiries and
-                appointments.
+                The smart digital receptionist that transforms how businesses
+                handle customer inquiries and appointments.
               </p>
             </div>
 
@@ -475,7 +544,10 @@ export default function HomePage() {
               <h4 className="font-normal mb-4 text-sm">COMPANY</h4>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>
-                  <Link href="/about" className="hover:text-black transition-colors">
+                  <Link
+                    href="/about"
+                    className="hover:text-black transition-colors"
+                  >
                     About
                   </Link>
                 </li>
@@ -490,7 +562,10 @@ export default function HomePage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-black transition-colors">
+                  <Link
+                    href="/contact"
+                    className="hover:text-black transition-colors"
+                  >
                     Contact
                   </Link>
                 </li>
@@ -525,10 +600,16 @@ export default function HomePage() {
           </div>
 
           <div className="border-t border-gray-200 mt-12 pt-8 text-center text-sm text-gray-600">
-            <p>&copy; 2025 <a href="https://leverlabs.co" className="hover:underline">Leverlabs</a>. All rights reserved.</p>
+            <p>
+              &copy; 2025{" "}
+              <a href="https://leverlabs.co" className="hover:underline">
+                Leverlabs
+              </a>
+              . All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }
