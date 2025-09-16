@@ -68,6 +68,37 @@ export interface Appointment {
   updated_at: string
 }
 
+export interface AIMetrics {
+  id: string
+  business_id: string
+  conversation_id?: string
+  session_id: string
+  
+  // Performance metrics
+  response_time_ms: number
+  success_rate: number
+  
+  // AI performance metrics
+  tokens_used: number
+  prompt_tokens?: number
+  completion_tokens?: number
+  api_cost_usd: number
+  model_name: string
+  
+  // Business metrics
+  intent_detected: string
+  appointment_requested: boolean
+  human_handoff_requested: boolean
+  appointment_booked?: boolean
+  
+  // Message metrics
+  user_message_length: number
+  ai_response_length: number
+  response_type: string
+  
+  created_at: string
+}
+
 // Business operations
 export async function createBusiness(business: Omit<Business, "id" | "created_at" | "updated_at">) {
   const result = await sql`
@@ -233,4 +264,53 @@ export async function updateAppointment(id: string, updates: Partial<Appointment
     RETURNING *
   `
   return result[0] as Appointment | undefined
+}
+// AI Metrics operations
+export async function createAIMetrics(metrics: Omit<AIMetrics, "id" | "created_at">) {
+  const result = await sql`
+    INSERT INTO ai_metrics (
+      business_id, conversation_id, session_id,
+      response_time_ms, success_rate,
+      tokens_used, prompt_tokens, completion_tokens, api_cost_usd, model_name,
+      intent_detected, appointment_requested, human_handoff_requested, appointment_booked,
+      user_message_length, ai_response_length, response_type
+    )
+    VALUES (
+      ${metrics.business_id}, ${metrics.conversation_id}, ${metrics.session_id},
+      ${metrics.response_time_ms}, ${metrics.success_rate},
+      ${metrics.tokens_used}, ${metrics.prompt_tokens}, ${metrics.completion_tokens}, ${metrics.api_cost_usd}, ${metrics.model_name},
+      ${metrics.intent_detected}, ${metrics.appointment_requested}, ${metrics.human_handoff_requested}, ${metrics.appointment_booked || false},
+      ${metrics.user_message_length}, ${metrics.ai_response_length}, ${metrics.response_type}
+    )
+    RETURNING *
+  `
+  return result[0] as AIMetrics
+}
+
+export async function getMetricsByBusiness(businessId: string, limit: number = 100) {
+  const result = await sql`
+    SELECT * FROM ai_metrics 
+    WHERE business_id = ${businessId} 
+    ORDER BY created_at DESC 
+    LIMIT ${limit}
+  `
+  return result as AIMetrics[]
+}
+
+export async function getMetricsAnalytics(businessId: string, days: number = 30) {
+  const result = await sql`
+    SELECT 
+      COUNT(*) as total_conversations,
+      AVG(response_time_ms) as avg_response_time_ms,
+      AVG(success_rate) as avg_success_rate,
+      SUM(tokens_used) as total_tokens_used,
+      SUM(api_cost_usd) as total_api_cost_usd,
+      COUNT(CASE WHEN appointment_requested = true THEN 1 END) as appointment_requests,
+      COUNT(CASE WHEN appointment_booked = true THEN 1 END) as appointments_booked,
+      COUNT(CASE WHEN human_handoff_requested = true THEN 1 END) as human_handoffs
+    FROM ai_metrics 
+    WHERE business_id = ${businessId} 
+    AND created_at >= NOW() - INTERVAL '${days} days'
+  `
+  return result[0]
 }

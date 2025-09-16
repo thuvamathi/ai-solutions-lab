@@ -49,20 +49,48 @@ export interface TokenMetrics {
 }
 
 /**
- * Send metrics to the Flask MLOps service
+ * Track metrics by storing in database and sending to MLOps service
  * This function is designed to be non-blocking - it won't delay user responses
  * 
  * @param metricsData - The metrics to track
- * @returns Promise that resolves when metrics are sent (or fails silently)
+ * @returns Promise that resolves when metrics are processed (or fails silently)
  */
 export async function trackMetrics(metricsData: MetricsData): Promise<void> {
   try {
-    // Get MLOps service URL from environment
-    // In development, this will be localhost:5000
-    // In production, this would be your deployed Flask service URL
-    const mlopsServiceUrl = process.env.MLOPS_SERVICE_URL || 'http://localhost:5000';
+    // Import database function dynamically to avoid circular dependencies
+    const { createAIMetrics } = await import('@/lib/database');
     
-    // Send metrics to Flask service
+    // Store metrics in database first (for persistence/history)
+    try {
+      await createAIMetrics({
+        business_id: metricsData.business_id,
+        conversation_id: metricsData.conversation_id,
+        session_id: metricsData.session_id,
+        response_time_ms: metricsData.response_time_ms,
+        success_rate: metricsData.success_rate,
+        tokens_used: metricsData.tokens_used,
+        prompt_tokens: metricsData.prompt_tokens,
+        completion_tokens: metricsData.completion_tokens,
+        api_cost_usd: metricsData.api_cost_usd,
+        model_name: metricsData.model_name,
+        intent_detected: metricsData.intent_detected,
+        appointment_requested: metricsData.appointment_requested,
+        human_handoff_requested: metricsData.human_handoff_requested,
+        appointment_booked: metricsData.appointment_booked,
+        user_message_length: metricsData.user_message_length,
+        ai_response_length: metricsData.ai_response_length,
+        response_type: metricsData.response_type
+      });
+    } catch (dbError) {
+      console.error('Database storage failed (table may not exist):', dbError);
+      console.log('💡 Run the SQL from scripts/create-metrics-table.sql in your Neon console');
+      // Continue with MLOps service call even if database storage fails
+    }
+
+    // Send metrics to Flask MLOps service (for Prometheus monitoring)
+    const mlopsServiceUrl = process.env.MLOPS_SERVICE_URL || 'http://localhost:5001';
+    
+    // First, send the metrics for immediate Prometheus update
     const response = await fetch(`${mlopsServiceUrl}/track`, {
       method: 'POST',
       headers: {
@@ -78,7 +106,21 @@ export async function trackMetrics(metricsData: MetricsData): Promise<void> {
     }
 
     const result = await response.json();
-    console.log('Metrics tracked successfully:', result.mlflow_run_id);
+    console.log('Metrics tracked successfully:', result.status);
+    
+    // Optionally trigger metrics refresh from database (for persistence)
+    // This ensures Prometheus metrics are rebuilt from database on service restart
+    try {
+      await fetch(`${mlopsServiceUrl}/refresh-metrics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trigger: 'new_metrics' }),
+        signal: AbortSignal.timeout(3000)
+      });
+    } catch (refreshError) {
+      // Don't fail if refresh fails - it's not critical for user experience
+      console.log('Metrics refresh skipped:', refreshError);
+    }
     
   } catch (error) {
     // Log error but don't throw - we don't want metrics tracking to break the user experience

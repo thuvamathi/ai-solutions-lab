@@ -117,7 +117,11 @@ git config --global --list
 1. Go to [neon.tech](https://neon.tech)
 2. Click "Sign up with GitHub" (easiest option)
 3. Create a new project and name it: "ai-receptionist-lab"
-4. **Copy and save the connection string**
+4. **Copy the connection string** - it looks like:
+   ```
+   postgresql://neondb_owner:abc123@ep-cool-name-123456.us-east-1.aws.neon.tech/neondb?sslmode=require
+   ```
+5. **Save this entire string** - you'll paste it into your `.env` file next
 
 </details>
 

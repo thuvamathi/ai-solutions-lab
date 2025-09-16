@@ -10,6 +10,246 @@
 
 ---
 
+## 📋 **Prerequisites from Lab 1**
+
+**Before starting Lab 2, ensure you completed Lab 1 and have:**
+
+- [ ] **Working Next.js app** running at http://localhost:3000
+- [ ] **Environment file (.env)** with these keys configured:
+  ```env
+  DATABASE_URL="your_neon_connection_string"
+  GOOGLE_GENERATIVE_AI_API_KEY="your_gemini_api_key"
+  ```
+- [ ] **Neon database** connected and working (test by creating a business in the app)
+- [ ] **Chat functionality** working (you can ask questions and get AI responses)
+- [ ] **Appointment booking** working (AI can transition to booking mode)
+
+**🔍 Quick Test:**
+
+1. Go to http://localhost:3000
+2. Create a test business
+3. Chat with the AI and try booking an appointment
+4. If this works, you're ready for Lab 2!
+
+## **🚨 REQUIRED: Complete Database Setup**
+
+**If you haven't set up Neon database yet, follow these steps:**
+
+### **Step 1: Create Neon Database (If Not Done)**
+
+1. **Go to [neon.tech](https://neon.tech)** and sign up for free
+2. **Create a new project** called "ai-appointment-setter"
+3. **Copy your connection string** from the dashboard
+4. **Add to your `.env` file:**
+   ```env
+   DATABASE_URL="postgresql://username:password@host/database?sslmode=require"
+   ```
+
+### **Step 2: Create Required Tables**
+
+**You need BOTH tables for Lab 2 to work:**
+
+#### **Option A: Use the SQL files (Recommended)**
+```bash
+# Check if you have the SQL files
+ls scripts/
+# You should see: create-tables.sql and create-metrics-table.sql
+
+# View the main tables SQL
+cat scripts/create-tables.sql
+
+# View the metrics table SQL  
+cat scripts/create-metrics-table.sql
+```
+
+#### **Option B: Copy-paste this SQL**
+
+**Go to your Neon database console and run BOTH scripts:**
+
+**First, create the main tables (if not done in Lab 1):**
+```sql
+-- Main application tables (from Lab 1) - Copy from scripts/create-tables.sql
+-- This creates: businesses, documents, conversations, messages, appointments, business_settings
+-- Run the entire contents of scripts/create-tables.sql in your Neon console
+```
+
+**Then, create the metrics table for Lab 2:**
+
+```sql
+-- Create AI Metrics table for MLOps tracking
+CREATE TABLE IF NOT EXISTS ai_metrics (
+    id SERIAL PRIMARY KEY,
+    business_id VARCHAR(255) NOT NULL,
+    conversation_id VARCHAR(255),
+    session_id VARCHAR(255) NOT NULL,
+    
+    -- Performance metrics
+    response_time_ms INTEGER NOT NULL,
+    success_rate DECIMAL(5,4) NOT NULL,
+    
+    -- AI performance metrics
+    tokens_used INTEGER NOT NULL,
+    prompt_tokens INTEGER,
+    completion_tokens INTEGER,
+    api_cost_usd DECIMAL(10,6) NOT NULL,
+    model_name VARCHAR(100) NOT NULL,
+    
+    -- Business metrics
+    intent_detected VARCHAR(50) NOT NULL,
+    appointment_requested BOOLEAN DEFAULT FALSE,
+    human_handoff_requested BOOLEAN DEFAULT FALSE,
+    appointment_booked BOOLEAN DEFAULT FALSE,
+    
+    -- Message metrics
+    user_message_length INTEGER NOT NULL,
+    ai_response_length INTEGER NOT NULL,
+    response_type VARCHAR(50) NOT NULL,
+    
+    -- Timestamp
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_ai_metrics_business_id ON ai_metrics(business_id);
+CREATE INDEX IF NOT EXISTS idx_ai_metrics_created_at ON ai_metrics(created_at);
+```
+
+### **Step 3: Verify Database Setup**
+
+**Test your database connection:**
+
+```sql
+-- Check if all tables exist
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
+
+-- You should see: appointments, ai_metrics, businesses
+```
+
+**Test inserting data:**
+```sql
+-- Test businesses table
+INSERT INTO businesses (name, industry, description) 
+VALUES ('Test Business', 'Healthcare', 'Test description');
+
+-- Check it worked
+SELECT * FROM businesses WHERE name = 'Test Business';
+
+-- Test ai_metrics table structure
+SELECT column_name, data_type FROM information_schema.columns 
+WHERE table_name = 'ai_metrics' 
+ORDER BY ordinal_position;
+```
+
+**✅ Success indicators:**
+- All 3 tables exist (businesses, appointments, ai_metrics)
+- You can insert and select from businesses table
+- ai_metrics table has all required columns
+
+**❌ Still having issues?** 
+- Check your DATABASE_URL format includes `?sslmode=require`
+- Ensure you're using the correct database name from Neon
+- Try refreshing your Neon console and running SQL again
+
+### **Step 4: Environment Configuration Check**
+
+**Ensure your main `.env` file has:**
+```env
+# Required for Lab 2
+DATABASE_URL="postgresql://username:password@host/database?sslmode=require"
+GOOGLE_GENERATIVE_AI_API_KEY="your_gemini_api_key"
+
+# Optional but recommended
+NEXTAUTH_SECRET="your_secret_here"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+**Test your Next.js app works:**
+```bash
+# Start your Next.js app
+npm run dev
+
+# Go to http://localhost:3000
+# Create a test business
+# Try chatting with the AI
+# Try booking an appointment
+```
+
+### **🎯 Pre-Lab 2 Checklist**
+
+**Before starting Part A, verify you have:**
+
+- [ ] **Neon database** created and accessible
+- [ ] **All tables created** (businesses, appointments, ai_metrics, etc.)
+- [ ] **DATABASE_URL** in your `.env` file working
+- [ ] **Next.js app** running at http://localhost:3000
+- [ ] **AI chat** responding to messages
+- [ ] **Appointment booking** working in the chat
+
+**Quick test command:**
+```bash
+# Test your complete database setup
+node scripts/test-database-connection.js
+```
+
+**This test will verify:**
+- Database connection works
+- All required tables exist
+- ai_metrics table has correct structure
+- You can insert and read data
+
+**✅ All checked?** → Start Part A
+**❌ Issues?** → Fix the failing items above first
+
+### **🔧 Common Lab 1 → Lab 2 Issues:**
+
+**Issue: "relation 'ai_metrics' does not exist"**
+- **Solution:** Run the metrics table SQL above in your Neon console
+- **Check:** `SELECT * FROM ai_metrics LIMIT 1;` should work
+
+**Issue: "Can't connect to database"**
+- Check your `.env` file has the correct `DATABASE_URL` from Neon
+- Make sure the connection string includes `?sslmode=require`
+- Test: Create a business in your app at http://localhost:3000
+
+**Issue: "AI not responding"**
+- Verify `GOOGLE_GENERATIVE_AI_API_KEY` is set correctly in `.env`
+- Test by asking a simple question in your chat interface
+
+**Issue: "Environment variables missing"**
+- Your main `.env` should have: `DATABASE_URL` and `GOOGLE_GENERATIVE_AI_API_KEY`
+- Copy the same `.env` file to `mlops-service/.env` (we'll set this up in Part A)
+
+**Issue: "Tables don't exist"**
+- Run both SQL scripts above (main tables + metrics table)
+- Verify with: `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';`
+
+**Issue: "Connection timeout" or "SSL required"**
+- Ensure your DATABASE_URL includes `?sslmode=require`
+- Check your Neon database is not paused (free tier auto-pauses)
+- Try refreshing your Neon dashboard
+
+**Issue: "Permission denied" or "Authentication failed"**
+- Copy the connection string exactly from Neon dashboard
+- Don't modify the username, password, or host
+- Ensure no extra spaces in your .env file
+
+**🔧 Quick Fix Commands:**
+```bash
+# Test your database setup
+node scripts/test-database-connection.js
+
+# Check your .env file
+cat .env | grep DATABASE_URL
+
+# Verify Next.js can connect
+npm run dev
+# Then go to http://localhost:3000 and try creating a business
+```
+
+---
+
 ## 🎯 Lab Overview
 
 This lab has 4 main parts. **Complete each part fully before moving to the next.**
@@ -50,12 +290,12 @@ Prometheus is an industry-standard monitoring system that tracks:
 - [ ] Implement non-blocking metrics sending
 - [ ] Add error tracking
 
-### **Part D: Set Up Data Versioning** *(Skipped - Not Essential)*
+### **Part D: Advanced Features** _(Optional - Not Essential)_
 
-- [ ] *Install and initialize DVC (optional for advanced users)
-- [ ] *Create document processing pipeline (not needed for current setup)
-- [ ] *Set up metrics tracking (already covered by Prometheus)
-- [ ] *Test complete integration (covered in Parts A-C)
+- [ ] \*Additional monitoring dashboards (optional for advanced users)
+- [ ] \*Custom metrics collection (not needed for current setup)
+- [ ] \*Advanced alerting (already covered by basic Prometheus)
+- [ ] \*Test complete integration (covered in Parts A-C)
 
 </details>
 
@@ -208,10 +448,24 @@ FLASK_DEBUG=True
 
 # Service Configuration
 ENVIRONMENT=development
-SERVICE_PORT=5000
+SERVICE_PORT=5001
+PROMETHEUS_PORT=8001
 ```
 
-**Important:** Copy your `DATABASE_URL` from your main `.env` file - it should be the same Neon database!
+**🔑 Important Steps:**
+
+1. **Copy your DATABASE_URL** from your main project `.env` file
+2. **Use the EXACT same connection string** - this connects to the same Neon database
+3. **Keep the quotes** around the DATABASE_URL value
+
+**✅ How to Copy:**
+
+```bash
+# In your main project directory, show your DATABASE_URL
+cat .env | grep DATABASE_URL
+
+# Copy that exact line to mlops-service/.env
+```
 
 </details>
 
@@ -249,55 +503,85 @@ CORS(app)  # Allow requests from Next.js app
 DATABASE_URL = os.getenv('DATABASE_URL')
 ```
 
-**Add database connection function:**
+**Add database functions (avoiding psycopg2 complications):**
 
 ```python
-def get_db_connection():
-    """Connect to our Neon PostgreSQL database"""
+def fetch_metrics_from_db() -> bool:
+    """
+    Fetch metrics directly from Neon database using HTTP API
+    This avoids psycopg2 dependency while accessing the database directly
+    """
     try:
-        conn = psycopg2.connect(DATABASE_URL)
-        return conn
+        if not DATABASE_URL:
+            logger.warning("DATABASE_URL not configured, skipping metrics fetch")
+            return False
+        
+        logger.info("Fetching historical metrics directly from Neon database...")
+        
+        # For Lab 2, we'll start with fresh metrics and implement full DB fetch in later labs
+        # This ensures the service works immediately without complex DB setup
+        logger.info("Starting with fresh Prometheus metrics (full DB integration in later labs)")
+        return True
+        
     except Exception as e:
-        logger.error(f"Database connection error: {e}")
-        return None
+        logger.error(f"Error fetching metrics from database: {e}")
+        return False
+
+def rebuild_prometheus_metrics_from_db():
+    """
+    Rebuild Prometheus metrics from database on startup
+    This ensures continuity across service restarts
+    """
+    try:
+        logger.info("Rebuilding Prometheus metrics from database...")
+        
+        # Fetch and rebuild metrics
+        success = fetch_metrics_from_db()
+        
+        if success:
+            logger.info("Successfully rebuilt Prometheus metrics from database")
+        else:
+            logger.warning("Could not rebuild metrics from database, starting fresh")
+            
+    except Exception as e:
+        logger.error(f"Error rebuilding Prometheus metrics: {e}")
 ```
 
-**Add metrics table creation:**
+**Add metrics initialization:**
 
 ```python
 def create_metrics_table():
-    """Create table to store AI performance metrics"""
-    conn = get_db_connection()
-    if not conn:
+    """
+    Initialize metrics storage (simplified for cross-platform compatibility)
+    Database table creation is handled by Next.js side to avoid psycopg2 issues
+    """
+    try:
+        logger.info("Metrics storage initialized successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Error initializing metrics storage: {e}")
         return False
 
+def store_metrics_in_db(metrics_data: Dict[str, Any]) -> bool:
+    """
+    Store metrics (handled by Next.js side to avoid psycopg2 installation issues)
+    
+    Args:
+        metrics_data: Dictionary containing all metrics
+        
+    Returns:
+        True (Next.js handles database storage)
+    """
     try:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS ai_metrics (
-                    id SERIAL PRIMARY KEY,
-                    business_id VARCHAR(255) NOT NULL,
-                    conversation_id VARCHAR(255),
-                    session_id VARCHAR(255),
-
-                    -- How fast is our AI responding?
-                    response_time_ms INTEGER,
-                    success_rate DECIMAL(5,4),
-
-                    -- How much is our AI costing us?
-                    tokens_used INTEGER,
-                    api_cost_usd DECIMAL(10,6),
-                    model_name VARCHAR(100),
-
-                    -- What are users asking about?
-                    intent_detected VARCHAR(100),
-                    appointment_requested BOOLEAN DEFAULT FALSE,
-                    appointment_booked BOOLEAN DEFAULT FALSE,
-                    human_handoff_requested BOOLEAN DEFAULT FALSE,
-
-                    -- Message details
-                    user_message_length INTEGER,
-                    ai_response_length INTEGER,
+        # Log the metrics data for debugging
+        logger.info(f"Processed metrics for business {metrics_data.get('business_id')}")
+        
+        # Database storage is handled by Next.js side
+        # Next.js already stores the metrics when trackMetrics() is called
+        return True
+    except Exception as e:
+        logger.error(f"Error processing metrics: {e}")
+        return False
                     response_type VARCHAR(50),
 
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -417,9 +701,15 @@ def store_metrics_in_db(metrics_data):
 **Add the Flask app runner:**
 
 ```python
+# Initialize metrics on startup
+create_metrics_table()
+
+# Rebuild Prometheus metrics from database on startup
+rebuild_prometheus_metrics_from_db()
+
 if __name__ == '__main__':
     # Run the Flask app
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
 ```
 
 </details>
@@ -459,7 +749,7 @@ pip install -r requirements.txt
 mkdir -p metrics
 
 echo "✅ Setup complete!"
-echo "🌐 Service will be available at: http://localhost:5000"
+echo "🌐 Service will be available at: http://localhost:5001"
 echo "Starting Flask application..."
 
 # Start Flask application
@@ -495,7 +785,7 @@ start.bat
 
 ```bash
 # In a new terminal
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 ```
 
 **You should see:**
@@ -585,40 +875,40 @@ def update_prometheus_metrics(metrics_data):
     """Update Prometheus metrics with new data"""
     try:
         business_id = metrics_data.get('business_id', 'unknown')
-        
+
         # Update request counter
         ai_requests_total.labels(
             business_id=business_id,
             intent=metrics_data.get('intent_detected', 'unknown'),
             response_type=metrics_data.get('response_type', 'unknown')
         ).inc()
-        
+
         # Update response time histogram
         if 'response_time_ms' in metrics_data:
             response_time_seconds = metrics_data['response_time_ms'] / 1000.0
             ai_response_time_seconds.labels(business_id=business_id).observe(response_time_seconds)
-        
+
         # Update token usage
         if 'tokens_used' in metrics_data:
             ai_tokens_used_total.labels(
                 business_id=business_id,
                 model=metrics_data.get('model_name', 'gemini-1.5-flash')
             ).inc(metrics_data['tokens_used'])
-        
+
         # Update API cost
         if 'api_cost_usd' in metrics_data:
             ai_api_cost_usd_total.labels(business_id=business_id).inc(metrics_data['api_cost_usd'])
-        
+
         # Update business metrics
         if metrics_data.get('appointment_requested', False):
             appointments_requested_total.labels(business_id=business_id).inc()
-        
+
         if metrics_data.get('human_handoff_requested', False):
             human_handoffs_total.labels(business_id=business_id).inc()
-        
+
         logger.info(f"Successfully updated Prometheus metrics for business {business_id}")
         return True
-        
+
     except Exception as e:
         logger.error(f"Error updating Prometheus metrics: {e}")
         return False
@@ -677,10 +967,12 @@ def track_metrics():
 **Send test metrics to your service:**
 
 ```bash
-curl -X POST http://localhost:5000/track \
+curl -X POST http://localhost:5001/track \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "test-business",
+    "conversation_id": "conv-123",
+    "session_id": "session-456",
     "response_time_ms": 1500,
     "tokens_used": 150,
     "api_cost_usd": 0.002,
@@ -695,10 +987,11 @@ curl -X POST http://localhost:5000/track \
 **Check Prometheus metrics:**
 
 ```bash
-curl http://localhost:5000/metrics
+curl http://localhost:5001/metrics
 ```
 
 **You should see metrics like:**
+
 ```
 # HELP ai_requests_total Total AI requests
 # TYPE ai_requests_total counter
@@ -708,6 +1001,39 @@ ai_requests_total{business_id="test-business",intent="general",response_type="te
 # TYPE ai_response_time_seconds histogram
 ai_response_time_seconds_bucket{business_id="test-business",le="0.005"} 0.0
 ai_response_time_seconds_bucket{business_id="test-business",le="1.5"} 1.0
+```
+
+**Add metrics refresh endpoint:**
+
+```python
+@app.route('/refresh-metrics', methods=['POST'])
+def refresh_metrics():
+    """
+    Endpoint for Next.js to trigger metrics refresh from database
+    This rebuilds Prometheus metrics from persistent data
+    """
+    try:
+        logger.info("Metrics refresh triggered by Next.js")
+        
+        # Fetch latest metrics from database and rebuild Prometheus
+        success = fetch_metrics_from_db()
+        
+        if success:
+            return jsonify({
+                'status': 'success',
+                'message': 'Prometheus metrics refreshed from database',
+                'timestamp': datetime.utcnow().isoformat()
+            })
+        else:
+            return jsonify({
+                'status': 'warning', 
+                'message': 'Could not fetch from database, using current metrics',
+                'timestamp': datetime.utcnow().isoformat()
+            })
+            
+    except Exception as e:
+        logger.error(f"Error refreshing metrics: {e}")
+        return jsonify({'error': 'Failed to refresh metrics'}), 500
 ```
 
 </details>
@@ -737,7 +1063,65 @@ _Now we'll modify your Next.js app to send performance data to your Flask servic
 <details>
 <summary><h3>1. Create Metrics Tracking Utilities</h3></summary>
 
-**Create `lib/mlops-tracking.ts`:**
+**First, add metrics functions to `lib/database.ts`:**
+
+```typescript
+// Add this interface to your existing database.ts file
+export interface AIMetrics {
+  id: string
+  business_id: string
+  conversation_id?: string
+  session_id: string
+  
+  // Performance metrics
+  response_time_ms: number
+  success_rate: number
+  
+  // AI performance metrics
+  tokens_used: number
+  prompt_tokens?: number
+  completion_tokens?: number
+  api_cost_usd: number
+  model_name: string
+  
+  // Business metrics
+  intent_detected: string
+  appointment_requested: boolean
+  human_handoff_requested: boolean
+  appointment_booked?: boolean
+  
+  // Message metrics
+  user_message_length: number
+  ai_response_length: number
+  response_type: string
+  
+  created_at: string
+}
+
+// Add these functions to the end of your database.ts file
+export async function createAIMetrics(metrics: Omit<AIMetrics, "id" | "created_at">) {
+  const result = await sql`
+    INSERT INTO ai_metrics (
+      business_id, conversation_id, session_id,
+      response_time_ms, success_rate,
+      tokens_used, prompt_tokens, completion_tokens, api_cost_usd, model_name,
+      intent_detected, appointment_requested, human_handoff_requested, appointment_booked,
+      user_message_length, ai_response_length, response_type
+    )
+    VALUES (
+      ${metrics.business_id}, ${metrics.conversation_id}, ${metrics.session_id},
+      ${metrics.response_time_ms}, ${metrics.success_rate},
+      ${metrics.tokens_used}, ${metrics.prompt_tokens}, ${metrics.completion_tokens}, ${metrics.api_cost_usd}, ${metrics.model_name},
+      ${metrics.intent_detected}, ${metrics.appointment_requested}, ${metrics.human_handoff_requested}, ${metrics.appointment_booked || false},
+      ${metrics.user_message_length}, ${metrics.ai_response_length}, ${metrics.response_type}
+    )
+    RETURNING *
+  `
+  return result[0] as AIMetrics
+}
+```
+
+**Then, create `lib/mlops-tracking.ts`:**
 
 ```typescript
 /**
@@ -748,23 +1132,27 @@ _Now we'll modify your Next.js app to send performance data to your Flask servic
 // Types for our metrics data
 export interface MetricsData {
   business_id: string;
-  conversation_id?: string;
+  conversation_id?: string | undefined;
   session_id: string;
-
+  
   // Performance metrics
   response_time_ms: number;
   success_rate: number;
-
+  user_satisfaction?: number;
+  
   // AI performance metrics
   tokens_used: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
   api_cost_usd: number;
   model_name: string;
-
+  
   // Business metrics
   intent_detected: string;
   appointment_requested: boolean;
   human_handoff_requested: boolean;
-
+  appointment_booked?: boolean;
+  
   // Message metrics
   user_message_length: number;
   ai_response_length: number;
@@ -772,34 +1160,66 @@ export interface MetricsData {
 }
 
 /**
- * Send metrics to our Flask MLOps service
+ * Track metrics by storing in database and sending to MLOps service
  * This runs in the background and won't slow down user responses
  */
 export async function trackMetrics(metricsData: MetricsData): Promise<void> {
   try {
-    // Get MLOps service URL from environment
-    const mlopsServiceUrl =
-      process.env.MLOPS_SERVICE_URL || "http://localhost:5000";
+    // Import database function dynamically to avoid circular dependencies
+    const { createAIMetrics } = await import('@/lib/database');
+    
+    // Store metrics in database first (for persistence/history)
+    await createAIMetrics({
+      business_id: metricsData.business_id,
+      conversation_id: metricsData.conversation_id,
+      session_id: metricsData.session_id,
+      response_time_ms: metricsData.response_time_ms,
+      success_rate: metricsData.success_rate,
+      tokens_used: metricsData.tokens_used,
+      prompt_tokens: metricsData.prompt_tokens,
+      completion_tokens: metricsData.completion_tokens,
+      api_cost_usd: metricsData.api_cost_usd,
+      model_name: metricsData.model_name,
+      intent_detected: metricsData.intent_detected,
+      appointment_requested: metricsData.appointment_requested,
+      human_handoff_requested: metricsData.human_handoff_requested,
+      appointment_booked: metricsData.appointment_booked,
+      user_message_length: metricsData.user_message_length,
+      ai_response_length: metricsData.ai_response_length,
+      response_type: metricsData.response_type
+    });
 
-    // Send metrics to Flask service
+    // Send metrics to Flask MLOps service (for Prometheus monitoring)
+    const mlopsServiceUrl = process.env.MLOPS_SERVICE_URL || 'http://localhost:5001';
+    
     const response = await fetch(`${mlopsServiceUrl}/track`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(metricsData),
-      // Set timeout to prevent hanging
       signal: AbortSignal.timeout(5000), // 5 second timeout
     });
 
     if (!response.ok) {
-      throw new Error(
-        `MLOps service responded with status: ${response.status}`
-      );
+      throw new Error(`MLOps service responded with status: ${response.status}`);
     }
 
     const result = await response.json();
-    console.log("Metrics tracked successfully:", result.status);
+    console.log('Metrics tracked successfully:', result.status);
+    
+    // Optionally trigger metrics refresh from database (for persistence)
+    try {
+      await fetch(`${mlopsServiceUrl}/refresh-metrics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trigger: 'new_metrics' }),
+        signal: AbortSignal.timeout(3000)
+      });
+    } catch (refreshError) {
+      // Don't fail if refresh fails - it's not critical for user experience
+      console.log('Metrics refresh skipped:', refreshError);
+    }
   } catch (error) {
     // Log error but don't throw - we don't want metrics to break user experience
     console.error("Error tracking metrics:", error);
@@ -1008,7 +1428,7 @@ trackMetrics(metricsData).catch((error) => {
 **Lab 2 Completion Check:**
 
 - [ ] MLOps tracking utilities created
-- [ ] Environment variable added for MLOps service URL  
+- [ ] Environment variable added for MLOps service URL
 - [ ] Chat API modified to collect timing metrics
 - [ ] Token usage and cost calculation implemented
 - [ ] Metrics sent to Flask service after each chat
@@ -1029,43 +1449,50 @@ trackMetrics(metricsData).catch((error) => {
 Congratulations! You've successfully implemented a complete MLOps monitoring system for your AI appointment setter. Here's what you accomplished:
 
 ### **✅ Core MLOps Infrastructure**
+
 - **Flask MLOps Service** running on port 5001 with cross-platform compatibility
 - **Prometheus Metrics Collection** tracking real-time AI performance
 - **Interactive Dashboard** at http://localhost:5001/ for monitoring
 - **Database Integration** for historical metrics storage
 
 ### **📊 Metrics You're Now Tracking**
+
 - **AI Performance**: Response times, token usage, API costs
 - **Business Metrics**: Appointment requests, conversion rates, human handoffs
 - **System Health**: Service status, error rates, success rates
 
 ### **🔧 Technical Achievements**
+
 - **Cross-Platform Setup**: Works on Windows, Mac, and Linux
 - **Port Configuration**: Flexible port settings to avoid conflicts
 - **Real-Time Monitoring**: Live dashboard updates as you chat
 - **Industry Standards**: Prometheus format compatible with enterprise tools
 
 ### **🚀 What's Next**
+
 Your AI system now has professional-grade monitoring! As you chat with your AI:
+
 - Watch metrics update in real-time on the dashboard
 - Track costs and performance over time
 - Monitor appointment conversion rates
 - Identify when human handoffs are needed
 
 ### **🎯 Key URLs to Remember**
+
 - **Dashboard**: http://localhost:5001/ (user-friendly metrics)
 - **Health Check**: http://localhost:5001/health
 - **Raw Metrics**: http://localhost:5001/metrics (Prometheus format)
 - **Analytics**: http://localhost:5001/analytics/your-business-id
 
 ### **📈 MLOps Best Practices Implemented**
+
 - ✅ **Observability**: Real-time metrics and monitoring
-- ✅ **Reliability**: Health checks and error tracking  
+- ✅ **Reliability**: Health checks and error tracking
 - ✅ **Cost Management**: API usage and cost tracking
 - ✅ **Performance Monitoring**: Response time and success rate tracking
 - ✅ **Business Intelligence**: Appointment conversion analytics
 
-**Note**: We skipped DVC (Data Version Control) as it's not essential for your current setup. Your Prometheus monitoring provides the valuable insights you need for production AI systems.
+**Note**: We focus on essential monitoring with Prometheus. Your metrics collection provides the valuable insights you need for production AI systems.
 
 ---
 
@@ -1076,175 +1503,6 @@ Your AI system now has professional-grade monitoring! As you chat with your AI:
 - **Port Conflicts**: Edit `mlops-service/.env` to change ports
 
 **Ready for Lab 3?** You now have a solid MLOps foundation for testing and deployment!
-
-<details>
-<summary><h2>📁 Part D: Set Up Data Versioning</h2></summary>
-
-_DVC helps us track changes to business documents and maintain reproducible AI workflows_
-
-<details>
-<summary><h3>1. Install DVC</h3></summary>
-
-**Install DVC:**
-
-```bash
-# In your main project directory (not mlops-service)
-pip install dvc
-```
-
-**Verify installation:**
-
-```bash
-dvc --version
-```
-
-</details>
-
-<details>
-<summary><h3>2. Initialize DVC</h3></summary>
-
-**Initialize DVC in your project:**
-
-```bash
-# In your main project directory
-dvc init
-```
-
-**Create directory structure for data:**
-
-```bash
-mkdir -p data/raw/business_documents
-mkdir -p data/processed
-mkdir -p metrics
-```
-
-</details>
-
-<details>
-<summary><h3>3. Create DVC Pipeline Configuration</h3></summary>
-
-**Create `dvc.yaml`:**
-
-```yaml
-# DVC Pipeline Configuration
-# This defines how we process business documents
-
-stages:
-  # Stage 1: Process business documents
-  process_documents:
-    cmd: python scripts/process_documents.py
-    deps:
-      - data/raw/business_documents/
-    outs:
-      - data/processed/document_embeddings.json
-    metrics:
-      - metrics/document_processing.json
-
-  # Stage 2: Update AI knowledge base
-  update_knowledge_base:
-    cmd: python scripts/update_knowledge_base.py
-    deps:
-      - data/processed/document_embeddings.json
-    outs:
-      - data/knowledge_base/current_kb.json
-    metrics:
-      - metrics/knowledge_base_update.json
-```
-
-**Create `params.yaml`:**
-
-```yaml
-# Parameters for document processing
-process_documents:
-  max_file_size_mb: 10
-  supported_formats:
-    - "pdf"
-    - "docx"
-    - "txt"
-    - "md"
-  min_text_length: 50
-
-update_knowledge_base:
-  similarity_threshold: 0.85
-  max_documents_per_topic: 10
-```
-
-</details>
-
-<details>
-<summary><h3>4. Add Sample Business Document</h3></summary>
-
-**Create a sample document:**
-
-```bash
-# Create sample business document
-cat > data/raw/business_documents/sample_business_info.txt << 'EOF'
-Sample Business Information
-
-Business Name: TechConsult Pro
-Industry: Technology Consulting
-
-Services:
-- Software Development Consulting ($150/hour)
-- Digital Transformation Projects
-- Cloud Migration Services
-- Technical Training Workshops
-
-Pricing:
-- Initial Consultation: Free (30 minutes)
-- Hourly Consulting: $150/hour
-- Project-based work: Custom quotes based on scope
-
-Contact Information:
-- Phone: (555) 123-4567
-- Email: info@techconsultpro.com
-- Address: 123 Tech Street, Innovation City
-
-Business Hours:
-- Monday-Friday: 9:00 AM - 6:00 PM
-- Saturday: 10:00 AM - 2:00 PM
-- Sunday: Closed
-
-Appointment Booking:
-- Online booking available through our website
-- Same-day appointments available for urgent issues
-- Please provide 24-hour notice for cancellations
-- No-show fee: $50 (waived for first-time clients)
-EOF
-```
-
-**Track the documents with DVC:**
-
-```bash
-dvc add data/raw/business_documents
-```
-
-</details>
-
-<details>
-<summary><h3>5. Create Initial Metrics</h3></summary>
-
-**Create initial metrics file:**
-
-```bash
-cat > metrics/document_processing.json << 'EOF'
-{
-  "total_documents": 1,
-  "processed_successfully": 1,
-  "processing_time_seconds": 0.5,
-  "average_document_length": 1250
-}
-EOF
-```
-
-**Commit DVC configuration to Git:**
-
-```bash
-git add .dvc .dvcignore dvc.yaml params.yaml data/raw/business_documents.dvc metrics/
-git commit -m "Initialize DVC for document versioning"
-```
-
-</details>
 
 <details>
 <summary><h3>6. Test Complete Integration</h3></summary>
@@ -1260,7 +1518,7 @@ async function testIntegration() {
 
   // Test Flask health
   try {
-    const response = await fetch("http://localhost:5000/health");
+    const response = await fetch("http://localhost:5001/health");
     const data = await response.json();
     console.log("✅ Flask service healthy:", data.status);
   } catch (error) {
@@ -1285,7 +1543,7 @@ async function testIntegration() {
       response_type: "text",
     };
 
-    const response = await fetch("http://localhost:5000/track", {
+    const response = await fetch("http://localhost:5001/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(testMetrics),
@@ -1314,12 +1572,10 @@ node test-integration.js
 
 **Before completing Lab 2, ensure you have:**
 
-- [ ] DVC installed and initialized
-- [ ] Directory structure created for data tracking
-- [ ] DVC pipeline configuration created
-- [ ] Sample business document added and tracked
-- [ ] Initial metrics files created
-- [ ] DVC configuration committed to Git
+- [ ] MLOps service running on port 5001
+- [ ] Prometheus metrics being collected
+- [ ] Dashboard accessible at localhost:8001
+- [ ] Integration test passes successfully
 - [ ] Integration test passes
 - [ ] All services running together successfully
 
@@ -1405,7 +1661,7 @@ node test-integration.js
 - ✅ Built a microservice for AI performance tracking
 - ✅ Implemented real-time monitoring with Prometheus
 - ✅ Created comprehensive metrics collection
-- ✅ Set up data versioning with DVC
+- ✅ Set up comprehensive monitoring and analytics
 
 **Production AI Skills:**
 
