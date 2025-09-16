@@ -146,6 +146,25 @@ def create_metrics_table():
 # Create metrics table on startup
 create_metrics_table()
 
+@app.route('/')
+def dashboard():
+    """
+    Serve the MLOps dashboard
+    """
+    try:
+        with open('dashboard.html', 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        return jsonify({
+            'message': 'MLOps Service is running!',
+            'endpoints': {
+                'health': '/health',
+                'metrics': '/metrics',
+                'track': '/track',
+                'analytics': '/analytics/<business_id>'
+            }
+        })
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """
@@ -160,7 +179,7 @@ def health_check():
         'timestamp': datetime.utcnow().isoformat(),
         'monitoring': 'prometheus',
         'metrics_endpoint': '/metrics',
-        'prometheus_port': os.getenv('PROMETHEUS_PORT', '8000')
+        'prometheus_port': os.getenv('PROMETHEUS_PORT', '8001')
     })
 
 @app.route('/metrics')
@@ -357,10 +376,15 @@ if __name__ == '__main__':
     print("💾 Database: Simplified (cross-platform)")
     print(f"🌐 Service Port: {service_port}")
     print("🌐 Endpoints:")
+    print(f"   - GET  http://localhost:{service_port}/ (Dashboard)")
     print(f"   - GET  http://localhost:{service_port}/health")
     print(f"   - GET  http://localhost:{service_port}/metrics (Prometheus)")
     print(f"   - POST http://localhost:{service_port}/track")
     print(f"   - GET  http://localhost:{service_port}/analytics/<business_id>")
+    print("")
+    print("🎯 Quick Start:")
+    print(f"   📊 View Dashboard: http://localhost:{service_port}/")
+    print(f"   📈 View Raw Metrics: http://localhost:{service_port}/metrics")
     print("")
     
     # Start Prometheus metrics server on a separate port

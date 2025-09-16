@@ -165,31 +165,35 @@ python app.py
 
 ## Verify Everything Works
 
-1. **Flask service health check:**
+1. **Open the dashboard:**
+   Go to http://localhost:5001/ in your browser
+
+2. **Flask service health check:**
    ```bash
    curl http://localhost:5001/health
    ```
 
-2. **Check Prometheus metrics:**
+3. **Check Prometheus metrics:**
    ```bash
    curl http://localhost:5001/metrics
    ```
 
-3. **Run the test script:**
+4. **Run the test script:**
    ```bash
    cd mlops-service
    python test-simple.py
    ```
 
-4. **Send test metrics manually:**
+5. **Send test metrics manually:**
    ```bash
    curl -X POST http://localhost:5001/track \
      -H "Content-Type: application/json" \
      -d '{"business_id":"test","response_time_ms":1000,"tokens_used":100,"model_name":"gemini-1.5-flash","intent_detected":"general","appointment_requested":false,"human_handoff_requested":false,"user_message_length":10,"ai_response_length":20,"response_type":"text"}'
    ```
 
-5. **Check Prometheus metrics updated:**
-   Open http://localhost:5001/metrics in browser (should show ai_requests_total counter)
+6. **Check metrics updated:**
+   - Dashboard: http://localhost:5001/ (user-friendly view)
+   - Raw metrics: http://localhost:5001/metrics (should show ai_requests_total counter)
 
 ## Still Having Issues?
 

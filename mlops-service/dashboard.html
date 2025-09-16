@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLOps Dashboard - Prometheus Metrics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #2563eb;
+        }
+        
+        .metric-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-unit {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-healthy { background: #10b981; }
+        .status-warning { background: #f59e0b; }
+        .status-error { background: #ef4444; }
+        
+        .refresh-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .refresh-btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .endpoints {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .endpoint-link {
+            display: block;
+            color: #2563eb;
+            text-decoration: none;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .endpoint-link:hover {
+            background: #f3f4f6;
+            padding-left: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #ef4444;
+            background: #fef2f2;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 MLOps Dashboard</h1>
+        <p>Real-time AI Performance Monitoring with Prometheus</p>
+    </div>
+    
+    <div class="container">
+        <button class="refresh-btn" onclick="refreshMetrics()">🔄 Refresh Metrics</button>
+        
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="loading">Loading metrics...</div>
+        </div>
+        
+        <div class="endpoints">
+            <h3>📊 Available Endpoints</h3>
+            <a href="http://localhost:5001/health" target="_blank" class="endpoint-link">
+                🏥 Health Check - http://localhost:5001/health
+            </a>
+            <a href="http://localhost:5001/metrics" target="_blank" class="endpoint-link">
+                📈 Raw Prometheus Metrics - http://localhost:5001/metrics
+            </a>
+            <a href="http://localhost:8001/metrics" target="_blank" class="endpoint-link">
+                📊 Prometheus Server - http://localhost:8001/metrics
+            </a>
+            <a href="http://localhost:5001/analytics/test-business" target="_blank" class="endpoint-link">
+                📋 Analytics Dashboard - http://localhost:5001/analytics/test-business
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let metricsData = {
+            totalRequests: 0,
+            avgResponseTime: 0,
+            totalTokens: 0,
+            totalCost: 0,
+            appointments: 0,
+            handoffs: 0
+        };
+
+        async function fetchHealth() {
+            try {
+                const response = await fetch('http://localhost:5001/health');
+                return await response.json();
+            } catch (error) {
+                console.error('Health check failed:', error);
+                return null;
+            }
+        }
+
+        async function fetchMetrics() {
+            try {
+                const response = await fetch('http://localhost:5001/metrics');
+                const text = await response.text();
+                return parsePrometheusMetrics(text);
+            } catch (error) {
+                console.error('Metrics fetch failed:', error);
+                return null;
+            }
+        }
+
+        function parsePrometheusMetrics(text) {
+            const lines = text.split('\n');
+            const metrics = {};
+            
+            lines.forEach(line => {
+                if (line.startsWith('ai_requests_total')) {
+                    const match = line.match(/ai_requests_total.*?\s+(\d+(?:\.\d+)?)/);
+                    if (match) {
+                        metrics.totalRequests = (metrics.totalRequests || 0) + parseFloat(match[1]);
+                    }
+                }
+                
+                if (line.startsWith('ai_tokens_used_total')) {
+                    const match = line.match(/ai_tokens_used_total.*?\s+(\d+(?:\.\d+)?)/);
+                    if (match) {
+                        metrics.totalTokens = (metrics.totalTokens || 0) + parseFloat(match[1]);
+                    }
+                }
+                
+                if (line.startsWith('ai_api_cost_usd_total')) {
+                    const match = line.match(/ai_api_cost_usd_total.*?\s+(\d+(?:\.\d+)?)/);
+                    if (match) {
+                        metrics.totalCost = (metrics.totalCost || 0) + parseFloat(match[1]);
+                    }
+                }
+                
+                if (line.startsWith('appointments_requested_total')) {
+                    const match = line.match(/appointments_requested_total.*?\s+(\d+(?:\.\d+)?)/);
+                    if (match) {
+                        metrics.appointments = (metrics.appointments || 0) + parseFloat(match[1]);
+                    }
+                }
+                
+                if (line.startsWith('human_handoffs_total')) {
+                    const match = line.match(/human_handoffs_total.*?\s+(\d+(?:\.\d+)?)/);
+                    if (match) {
+                        metrics.handoffs = (metrics.handoffs || 0) + parseFloat(match[1]);
+                    }
+                }
+            });
+            
+            return metrics;
+        }
+
+        function renderMetrics(health, metrics) {
+            const grid = document.getElementById('metricsGrid');
+            
+            if (!health) {
+                grid.innerHTML = '<div class="error">❌ Cannot connect to MLOps service. Make sure it\'s running on http://localhost:5001</div>';
+                return;
+            }
+            
+            const isHealthy = health.status === 'healthy';
+            const statusClass = isHealthy ? 'status-healthy' : 'status-error';
+            
+            grid.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-title">Service Status</div>
+                    <div class="metric-value">
+                        <span class="status-indicator ${statusClass}"></span>
+                        ${health.status || 'Unknown'}
+                    </div>
+                    <div class="metric-unit">Last updated: ${new Date().toLocaleTimeString()}</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Total AI Requests</div>
+                    <div class="metric-value">${metrics?.totalRequests || 0}</div>
+                    <div class="metric-unit">conversations processed</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Total Tokens Used</div>
+                    <div class="metric-value">${(metrics?.totalTokens || 0).toLocaleString()}</div>
+                    <div class="metric-unit">AI tokens consumed</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Total API Cost</div>
+                    <div class="metric-value">$${(metrics?.totalCost || 0).toFixed(4)}</div>
+                    <div class="metric-unit">USD spent on AI</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Appointments Requested</div>
+                    <div class="metric-value">${metrics?.appointments || 0}</div>
+                    <div class="metric-unit">booking attempts</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Human Handoffs</div>
+                    <div class="metric-value">${metrics?.handoffs || 0}</div>
+                    <div class="metric-unit">escalations needed</div>
+                </div>
+            `;
+        }
+
+        async function refreshMetrics() {
+            const grid = document.getElementById('metricsGrid');
+            grid.innerHTML = '<div class="loading">🔄 Refreshing metrics...</div>';
+            
+            const [health, metrics] = await Promise.all([
+                fetchHealth(),
+                fetchMetrics()
+            ]);
+            
+            renderMetrics(health, metrics);
+        }
+
+        // Initial load
+        refreshMetrics();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(refreshMetrics, 10000);
+    </script>
+</body>
+</html>
