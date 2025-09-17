@@ -17,10 +17,10 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   :root {
-    --font-sans: var(--font-geist-sans);
-    --font-mono: var(--font-geist-mono);
+    --font-geist-sans: 'Geist Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-geist-mono: 'Geist Mono', ui-monospace, monospace;
     /* restored original minimalist color tokens - black/white/gray theme */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;

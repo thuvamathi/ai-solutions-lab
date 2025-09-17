@@ -84,7 +84,7 @@ export default function LabsLayout({
             >
               ← Labs
             </Link>
-            <h1 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 pr-12 lg:pr-0">
+            <h1 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900">
               {currentLab?.title || 'Lab'}
             </h1>
           </div>
