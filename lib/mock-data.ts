@@ -1,5 +1,10 @@
 // Mock data for demonstration
-import type { Appointment, Document, Conversation, BusinessSettings } from "./types"
+import type {
+  Appointment,
+  Document,
+  Conversation,
+  BusinessSettings,
+} from "./types";
 
 export const mockAppointments: Appointment[] = [
   {
@@ -31,7 +36,7 @@ export const mockAppointments: Appointment[] = [
     createdAt: new Date("2024-01-11"),
     updatedAt: new Date("2024-01-12"),
   },
-]
+];
 
 export const mockDocuments: Document[] = [
   {
@@ -54,7 +59,7 @@ export const mockDocuments: Document[] = [
     uploadedAt: new Date("2024-01-02"),
     lastModified: new Date("2024-01-02"),
   },
-]
+];
 
 export const mockConversations: Conversation[] = [
   {
@@ -80,7 +85,7 @@ export const mockConversations: Conversation[] = [
     createdAt: new Date("2024-01-10T10:00:00"),
     updatedAt: new Date("2024-01-10T10:15:00"),
   },
-]
+];
 
 export const mockBusinessSettings: BusinessSettings = {
   id: "1",
@@ -95,7 +100,11 @@ export const mockBusinessSettings: BusinessSettings = {
     sunday: { start: "10:00", end: "14:00", enabled: false },
   },
   services: [
-    { name: "Consultation", duration: 60, description: "Initial consultation meeting" },
+    {
+      name: "Consultation",
+      duration: 60,
+      description: "Initial consultation meeting",
+    },
     { name: "Follow-up", duration: 30, description: "Follow-up appointment" },
     { name: "Review", duration: 45, description: "Review session" },
   ],
@@ -106,7 +115,12 @@ export const mockBusinessSettings: BusinessSettings = {
   },
   chatSettings: {
     welcomeMessage: "Hello! How can I assist you today?",
-    fallbackMessage: "I'm not sure about that. Would you like to schedule an appointment with our team?",
-    escalationTriggers: ["speak to human", "talk to someone", "customer service"],
+    fallbackMessage:
+      "I'm not sure about that. Would you like to schedule an appointment with our team?",
+    escalationTriggers: [
+      "speak to human",
+      "talk to someone",
+      "customer service",
+    ],
   },
-}
+};

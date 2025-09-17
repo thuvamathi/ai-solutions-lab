@@ -184,13 +184,13 @@ export function LabNavigation({ currentLabId, sections, currentSectionId }: LabN
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-md shadow-lg hover:bg-gray-50"
         aria-label="Toggle navigation menu"
       >
         {isMobileMenuOpen ? (
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         ) : (
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4 h-4" />
         )}
       </button>
 
@@ -210,10 +210,10 @@ export function LabNavigation({ currentLabId, sections, currentSectionId }: LabN
       </nav>
 
       {/* Mobile sidebar */}
-      <nav className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out ${
+      <nav className={`lg:hidden fixed top-0 left-0 h-full w-72 sm:w-80 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <div className="p-4 pt-20">
+        <div className="p-3 pt-16 pb-6">
           <SidebarContent />
         </div>
       </nav>

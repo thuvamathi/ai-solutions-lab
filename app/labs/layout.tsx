@@ -73,44 +73,52 @@ export default function LabsLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white">
       {/* Header - Fixed */}
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-30 flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-4 space-y-2">
+      <header className="border-b border-gray-200 bg-white sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="py-3 sm:py-4 space-y-1 sm:space-y-2">
             <Link
               href="/labs"
-              className="inline-block text-sm text-gray-600 hover:text-gray-900"
+              className="inline-block text-xs sm:text-sm text-gray-600 hover:text-gray-900"
             >
               ← Labs
             </Link>
-            <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
+            <h1 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 pr-12 lg:pr-0">
               {currentLab?.title || 'Lab'}
             </h1>
           </div>
         </div>
       </header>
 
-      {/* Content Area - Flexible */}
-      <div className="flex-1 flex overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 w-full h-full">
-          {/* Navigation Sidebar - Fixed */}
-          <div className="flex-shrink-0">
-            <div className="sticky top-8 max-h-[calc(100vh-8rem)] overflow-y-auto">
-              <LabNavigation 
+      {/* Content Area */}
+      <div className="flex">
+        <div className="w-full lg:max-w-7xl lg:mx-auto lg:px-8 lg:py-6 lg:flex lg:gap-6">
+          {/* Navigation Sidebar - Desktop only, Mobile uses overlay */}
+          <div className="hidden lg:block lg:flex-shrink-0">
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+              <LabNavigation
                 currentLabId={currentLabId}
                 sections={currentLab?.sections || []}
               />
             </div>
           </div>
 
-          {/* Main Content - Scrollable */}
-          <main className="flex-1 max-w-4xl overflow-y-auto max-h-[calc(100vh-8rem)] scroll-smooth">
-            <div className="pb-20">
+          {/* Main Content */}
+          <main className="flex-1 lg:max-w-4xl px-3 sm:px-4 lg:px-0 py-4 lg:py-0">
+            <div className="pb-16 lg:pb-20">
               {children}
             </div>
           </main>
         </div>
+      </div>
+
+      {/* Mobile Navigation - Show for mobile/tablet */}
+      <div className="lg:hidden">
+        <LabNavigation
+          currentLabId={currentLabId}
+          sections={currentLab?.sections || []}
+        />
       </div>
     </div>
   )
