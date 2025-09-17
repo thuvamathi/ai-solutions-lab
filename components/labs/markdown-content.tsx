@@ -1,7 +1,61 @@
 'use client'
 
+import { useState } from 'react'
+import { Copy, Check } from 'lucide-react'
+
 interface MarkdownContentProps {
   content: string
+}
+
+interface CodeBlockProps {
+  code: string
+  language?: string
+}
+
+function CodeBlock({ code, language }: CodeBlockProps) {
+  const [copied, setCopied] = useState(false)
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+    }
+  }
+
+  return (
+    <div className="relative group mb-6">
+      <div className="flex items-center justify-between bg-gray-800 text-gray-200 px-4 py-2 text-sm rounded-t-lg">
+        <span className="font-mono text-xs uppercase tracking-wide">
+          {language || 'code'}
+        </span>
+        <button
+          onClick={copyToClipboard}
+          className="flex items-center gap-1 px-2 py-1 rounded text-xs hover:bg-gray-700 transition-colors"
+          title="Copy to clipboard"
+        >
+          {copied ? (
+            <>
+              <Check className="w-3 h-3" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <Copy className="w-3 h-3" />
+              Copy
+            </>
+          )}
+        </button>
+      </div>
+      <pre className="bg-gray-100 border border-gray-200 border-t-0 p-4 rounded-b-lg overflow-x-auto">
+        <code className="font-mono text-sm text-gray-800 whitespace-pre">
+          {code}
+        </code>
+      </pre>
+    </div>
+  )
 }
 
 export function MarkdownContent({ content }: MarkdownContentProps) {
@@ -11,6 +65,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
     let i = 0
     let inCodeBlock = false
     let codeLines: string[] = []
+    let codeLanguage = ''
     let inList = false
     let listItems: JSX.Element[] = []
     let listType: 'ul' | 'ol' = 'ul'
@@ -19,7 +74,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
       if (listItems.length > 0) {
         const ListComponent = listType === 'ul' ? 'ul' : 'ol'
         elements.push(
-          <ListComponent key={`list-${elements.length}`} className="mb-4 ml-6 space-y-1">
+          <ListComponent key={`list-${elements.length}`} className="mb-6 ml-6 space-y-2">
             {listItems}
           </ListComponent>
         )
@@ -33,10 +88,10 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
       text = text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
       
       // Inline code
-      text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">$1</code>')
+      text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800 break-words">$1</code>')
       
       // Links
-      text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank">$1</a>')
+      text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline break-words" target="_blank" rel="noopener noreferrer">$1</a>')
       
       return <span dangerouslySetInnerHTML={{ __html: text }} />
     }
@@ -49,39 +104,41 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
         if (!inCodeBlock) {
           // Start code block
           inCodeBlock = true
+          codeLanguage = line.slice(3).trim()
           codeLines = []
         } else {
           // End code block
           inCodeBlock = false
           elements.push(
-            <pre key={`code-${elements.length}`} className="bg-gray-100 border border-gray-200 p-4 rounded-lg overflow-x-auto mb-6 text-sm">
-              <code className="font-mono text-gray-800">
-                {codeLines.join('\n')}
-              </code>
-            </pre>
+            <CodeBlock 
+              key={`code-${elements.length}`}
+              code={codeLines.join('\n')}
+              language={codeLanguage}
+            />
           )
           codeLines = []
+          codeLanguage = ''
         }
       } else if (inCodeBlock) {
         codeLines.push(line)
       } else if (line.startsWith('### ')) {
         flushList()
         elements.push(
-          <h3 key={`h3-${elements.length}`} className="text-lg font-semibold mt-8 mb-4 text-gray-900">
+          <h3 key={`h3-${elements.length}`} className="text-lg font-semibold mt-8 mb-4 text-gray-900 scroll-mt-20" id={line.slice(4).toLowerCase().replace(/[^a-z0-9]+/g, '-')}>
             {line.slice(4)}
           </h3>
         )
       } else if (line.startsWith('## ')) {
         flushList()
         elements.push(
-          <h2 key={`h2-${elements.length}`} className="text-xl font-semibold mt-10 mb-4 text-gray-900">
+          <h2 key={`h2-${elements.length}`} className="text-xl font-semibold mt-10 mb-4 text-gray-900 scroll-mt-20" id={line.slice(3).toLowerCase().replace(/[^a-z0-9]+/g, '-')}>
             {line.slice(3)}
           </h2>
         )
       } else if (line.startsWith('# ')) {
         flushList()
         elements.push(
-          <h1 key={`h1-${elements.length}`} className="text-2xl font-bold mt-8 mb-6 text-gray-900">
+          <h1 key={`h1-${elements.length}`} className="text-2xl font-bold mt-8 mb-6 text-gray-900 scroll-mt-20" id={line.slice(2).toLowerCase().replace(/[^a-z0-9]+/g, '-')}>
             {line.slice(2)}
           </h1>
         )
@@ -92,7 +149,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
           listType = 'ul'
         }
         listItems.push(
-          <li key={`li-${elements.length}-${listItems.length}`} className="text-gray-700">
+          <li key={`li-${elements.length}-${listItems.length}`} className="text-gray-700 leading-relaxed">
             {parseInlineMarkdown(line.slice(2))}
           </li>
         )
@@ -103,7 +160,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
           listType = 'ol'
         }
         listItems.push(
-          <li key={`li-${elements.length}-${listItems.length}`} className="text-gray-700">
+          <li key={`li-${elements.length}-${listItems.length}`} className="text-gray-700 leading-relaxed">
             {parseInlineMarkdown(line.replace(/^\d+\. /, ''))}
           </li>
         )
@@ -115,7 +172,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
         // Regular paragraphs
         if (line.trim()) {
           elements.push(
-            <p key={`p-${elements.length}`} className="mb-4 text-gray-700 leading-relaxed">
+            <p key={`p-${elements.length}`} className="mb-4 text-gray-700 leading-relaxed break-words">
               {parseInlineMarkdown(line)}
             </p>
           )
@@ -130,8 +187,10 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   }
 
   return (
-    <div className="max-w-none">
-      {processContent(content)}
+    <div className="max-w-none overflow-hidden">
+      <div className="prose-content">
+        {processContent(content)}
+      </div>
     </div>
   )
 }
