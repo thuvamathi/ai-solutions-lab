@@ -128,6 +128,8 @@ git config --global --list
 <details>
 <summary><h3>5. Resend Email Service</h3></summary>
 
+<!-- NOTE: Email functionality not yet implemented in codebase - this is for future implementation -->
+
 **Sign Up:**
 1. Go to [resend.com](https://resend.com)
 2. Sign up for a free account
@@ -298,7 +300,7 @@ DATABASE_URL=your_neon_connection_string_here
 # AI API (from Google)
 GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key_here
 
-# Email Service (from Resend)
+# Email Service (from Resend) - NOTE: Not yet implemented, placeholder for future
 RESEND_API_KEY=your_resend_api_key_here
 
 # App Settings

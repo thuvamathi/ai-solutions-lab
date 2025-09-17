@@ -160,9 +160,10 @@ ORDER BY ordinal_position;
 DATABASE_URL="postgresql://username:password@host/database?sslmode=require"
 GOOGLE_GENERATIVE_AI_API_KEY="your_gemini_api_key"
 
-# Optional but recommended
-NEXTAUTH_SECRET="your_secret_here"
-NEXTAUTH_URL="http://localhost:3000"
+# App Settings
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+SECRET_KEY=change_this_to_something_secure
+DEBUG=true
 ```
 
 **Test your Next.js app works:**
@@ -393,8 +394,8 @@ Flask-CORS==4.0.0
 # Prometheus for metrics monitoring
 prometheus-client==0.19.0
 
-# Database connectivity
-psycopg2-binary==2.9.9
+# Database connectivity - using requests for HTTP-based database access
+# This avoids psycopg2 compilation issues on newer Python versions
 
 # Additional utilities
 python-dotenv==1.0.0

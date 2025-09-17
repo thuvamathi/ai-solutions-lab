@@ -1,36 +1,15 @@
-export interface LabSection {
-  id: string;
-  title: string;
-  content: string;
-}
-
-export interface Lab {
+// Simplified lab data interface for the main labs page
+export interface LabSummary {
   id: string;
   title: string;
   description: string;
   duration: string;
   level: string;
   technology: string;
-  sections: LabSection[];
 }
 
-// Available lab IDs
-const availableLabIds = ['lab1', 'lab2'];
-
-// Load lab data from JSON files
-export async function loadLabData(labId: string): Promise<Lab | null> {
-  try {
-    const response = await fetch(`/data/labs/${labId}.json`);
-    if (!response.ok) return null;
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to load lab data for ${labId}:`, error);
-    return null;
-  }
-}
-
-// Get all available labs (summary data)
-export function getAllLabsSummary(): Array<Pick<Lab, 'id' | 'title' | 'description' | 'duration' | 'level' | 'technology'>> {
+// Get all available labs (summary data for main labs page)
+export function getAllLabsSummary(): LabSummary[] {
   return [
     {
       id: 'lab1',
@@ -49,14 +28,4 @@ export function getAllLabsSummary(): Array<Pick<Lab, 'id' | 'title' | 'descripti
       technology: 'Flask + Prometheus'
     }
   ];
-}
-
-export function getLabById(id: string): Promise<Lab | null> {
-  return loadLabData(id);
-}
-
-export function getAllLabs(): Promise<Lab[]> {
-  return Promise.all(
-    availableLabIds.map(id => loadLabData(id))
-  ).then(labs => labs.filter(Boolean) as Lab[]);
 }
