@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, ChevronRight } from 'lucide-react'
 
@@ -18,6 +18,50 @@ interface LabNavigationProps {
 
 export function LabNavigation({ currentLabId, sections, currentSectionId }: LabNavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState<string>('')
+
+  // Track which section is currently in view
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px', // Trigger when section is 20% from top
+      threshold: 0
+    }
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id)
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions)
+
+    // Observe all sections
+    sections.forEach((section) => {
+      const element = document.getElementById(section.id)
+      if (element) {
+        observer.observe(element)
+      }
+    })
+
+    return () => observer.disconnect()
+  }, [sections])
+
+  // Handle smooth scrolling to sections
+  const handleSectionClick = (sectionId: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      })
+      setActiveSection(sectionId)
+      setIsMobileMenuOpen(false)
+    }
+  }
 
   const allLabs = [
     { id: 'lab1', title: 'Lab 1: Environment Setup', path: '/labs/lab1' },
@@ -52,25 +96,33 @@ export function LabNavigation({ currentLabId, sections, currentSectionId }: LabN
         <div>
           <h3 className="text-sm font-semibold text-gray-900 mb-3">This Lab</h3>
           <div className="space-y-1">
-            {sections.map((section) => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                className={`block px-3 py-2 text-sm rounded-md transition-colors group ${
-                  currentSectionId === section.id
-                    ? 'bg-blue-100 text-blue-800 font-medium'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="truncate">{section.title}</span>
-                  {section.completed && (
-                    <span className="text-green-500 text-xs">✓</span>
-                  )}
-                </div>
-              </a>
-            ))}
+            {sections.map((section) => {
+              const isActive = activeSection === section.id || currentSectionId === section.id
+              return (
+                <a
+                  key={section.id}
+                  href={`#${section.id}`}
+                  className={`block px-3 py-2 text-sm rounded-md transition-all duration-200 group relative ${
+                    isActive
+                      ? 'bg-blue-100 text-blue-800 font-medium border-l-2 border-blue-500 pl-2'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:pl-2'
+                  }`}
+                  onClick={(e) => handleSectionClick(section.id, e)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="truncate">{section.title}</span>
+                    <div className="flex items-center gap-1">
+                      {section.completed && (
+                        <span className="text-green-500 text-xs">✓</span>
+                      )}
+                      {isActive && (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              )
+            })}
           </div>
         </div>
       )}
@@ -86,15 +138,44 @@ export function LabNavigation({ currentLabId, sections, currentSectionId }: LabN
           >
             ← All Labs
           </Link>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+              setActiveSection('')
+              setIsMobileMenuOpen(false)
+            }}
+            className="block w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+          >
+            ↑ Back to Top
+          </button>
           <a
             href="#troubleshooting"
             className="block px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={(e) => handleSectionClick('troubleshooting', e)}
           >
             🔧 Troubleshooting
           </a>
         </div>
       </div>
+
+      {/* Progress Indicator */}
+      {sections.length > 0 && (
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+            <span>Progress</span>
+            <span>{sections.findIndex(s => s.id === activeSection) + 1} / {sections.length}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-1">
+            <div 
+              className="bg-blue-500 h-1 rounded-full transition-all duration-300"
+              style={{ 
+                width: `${((sections.findIndex(s => s.id === activeSection) + 1) / sections.length) * 100}%` 
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 

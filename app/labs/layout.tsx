@@ -105,8 +105,10 @@ export default function LabsLayout({
           </div>
 
           {/* Main Content - Scrollable */}
-          <main className="flex-1 max-w-4xl overflow-y-auto max-h-[calc(100vh-8rem)]">
-            {children}
+          <main className="flex-1 max-w-4xl overflow-y-auto max-h-[calc(100vh-8rem)] scroll-smooth">
+            <div className="pb-20">
+              {children}
+            </div>
           </main>
         </div>
       </div>

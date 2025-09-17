@@ -352,7 +352,7 @@ touch start.sh`}</CodeBlock>
 └── start.sh        # Startup script`}</CodeBlock>
         </div>
 
-        <h3 id="python-deps" className="text-xl font-semibold mt-8 mb-4 text-gray-900">2. Set Up Python Dependencies</h3>
+        <h3 id="python-deps" className="text-xl font-semibold mt-8 mb-4 text-gray-900">2. Python Dependencies</h3>
         
         <p className="mb-2 text-gray-700 leading-relaxed">
           <strong>Create requirements.txt:</strong>
@@ -432,6 +432,359 @@ pip install -r requirements.txt`}</CodeBlock>
             <li>• Virtual environment activation: <code className="bg-white px-1 py-0.5 rounded text-sm font-mono">venv\\Scripts\\activate</code></li>
             <li>• Use <code className="bg-white px-1 py-0.5 rounded text-sm font-mono">start.bat</code> instead of <code className="bg-white px-1 py-0.5 rounded text-sm font-mono">start.sh</code></li>
           </ul>
+        </div>
+
+        <h3 id="env-vars" className="text-xl font-semibold mt-8 mb-4 text-gray-900">3. Environment Variables</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Create .env file in mlops-service directory:</strong>
+        </p>
+
+        <CodeBlock language="env">{`# Database Configuration (same as your Next.js app)
+DATABASE_URL=your_neon_database_url_here
+
+# Flask Configuration
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# Service Configuration
+ENVIRONMENT=development
+SERVICE_PORT=5001
+PROMETHEUS_PORT=8001`}</CodeBlock>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-yellow-800 mb-2">🔑 Important Steps:</h4>
+          <ol className="text-yellow-700 space-y-1">
+            <li>1. <strong>Copy your DATABASE_URL</strong> from your main project .env file</li>
+            <li>2. <strong>Use the EXACT same connection string</strong> - this connects to the same Neon database</li>
+            <li>3. <strong>Keep the quotes</strong> around the DATABASE_URL value</li>
+          </ol>
+        </div>
+
+        <h3 id="flask-app" className="text-xl font-semibold mt-8 mb-4 text-gray-900">4. Flask Application</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Create app.py with the basic Flask setup:</strong>
+        </p>
+
+        <CodeBlock language="python">{`"""
+Flask MLOps Service for AI Appointment Setter
+This service tracks AI performance metrics and stores them for analysis
+"""
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+import os
+import json
+import time
+from datetime import datetime
+import logging
+
+# Configure logging so we can see what's happening
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Initialize Flask app
+app = Flask(__name__)
+CORS(app)  # Allow requests from Next.js app
+
+# Database connection
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Check if our service is running properly"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'mlops-service',
+        'timestamp': datetime.utcnow().isoformat(),
+        'monitoring': 'prometheus'
+    })
+
+if __name__ == '__main__':
+    # Run the Flask app
+    app.run(host='0.0.0.0', port=5001, debug=True)`}</CodeBlock>
+
+        <h3 id="startup-script" className="text-xl font-semibold mt-8 mb-4 text-gray-900">5. Startup Script</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Create start.sh (Mac/Linux):</strong>
+        </p>
+
+        <CodeBlock language="bash">{`#!/bin/bash
+
+echo "🚀 Starting MLOps Service for AI Appointment Setter"
+echo "=================================================="
+
+# Check if Python is installed
+if ! command -v python3 &> /dev/null; then
+    echo "❌ Python 3 is not installed. Please install Python 3.8 or higher."
+    exit 1
+fi
+
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "📦 Creating Python virtual environment..."
+    python3 -m venv venv
+fi
+
+# Activate virtual environment
+echo "🔧 Activating virtual environment..."
+source venv/bin/activate
+
+# Install dependencies
+echo "📚 Installing Python dependencies..."
+pip install -r requirements.txt
+
+echo "✅ Setup complete!"
+echo "🌐 Service will be available at: http://localhost:5001"
+echo "Starting Flask application..."
+
+# Start Flask application
+python app.py`}</CodeBlock>
+
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Make it executable:</strong>
+        </p>
+        <CodeBlock language="bash">{`chmod +x start.sh`}</CodeBlock>
+
+        <h3 id="test-flask" className="text-xl font-semibold mt-8 mb-4 text-gray-900">6. Test Flask Service</h3>
+        
+        <p className="mb-4 text-gray-700 leading-relaxed">
+          <strong>Start the service:</strong>
+        </p>
+
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Mac/Linux:</strong>
+        </p>
+        <CodeBlock language="bash">{`./start.sh`}</CodeBlock>
+
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Windows:</strong>
+        </p>
+        <CodeBlock language="cmd">{`start.bat`}</CodeBlock>
+
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Test the health endpoint:</strong>
+        </p>
+        <CodeBlock language="bash">{`# In a new terminal
+curl http://localhost:5001/health`}</CodeBlock>
+
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>You should see:</strong>
+        </p>
+        <CodeBlock language="json">{`{
+  "status": "healthy",
+  "service": "mlops-service",
+  "timestamp": "2024-01-15T10:30:00.000000",
+  "monitoring": "prometheus"
+}`}</CodeBlock>
+
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <p className="text-green-800">
+            <strong>✅ Success Check:</strong> If you see the healthy response, your Flask service is working!
+          </p>
+        </div>
+
+        <h2 id="part-b" className="text-2xl font-bold mt-10 mb-6 text-gray-900">Part B: Prometheus Integration</h2>
+        
+        <p className="mb-6 text-gray-700 leading-relaxed italic">
+          Prometheus helps us track real-time metrics and see how our AI is performing over time
+        </p>
+
+        <h3 id="prometheus-setup" className="text-xl font-semibold mt-8 mb-4 text-gray-900">1. Prometheus Setup</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Add Prometheus metrics to your app.py:</strong>
+        </p>
+
+        <CodeBlock language="python">{`# Prometheus Metrics Setup
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+
+# Define Prometheus metrics
+ai_requests_total = Counter('ai_requests_total', 'Total AI requests', ['business_id', 'intent', 'response_type'])
+ai_response_time_seconds = Histogram('ai_response_time_seconds', 'AI response time in seconds', ['business_id'])
+ai_tokens_used_total = Counter('ai_tokens_used_total', 'Total tokens used', ['business_id', 'model'])
+ai_api_cost_usd_total = Counter('ai_api_cost_usd_total', 'Total API cost in USD', ['business_id'])
+appointments_requested_total = Counter('appointments_requested_total', 'Total appointment requests', ['business_id'])
+
+logger.info("Prometheus metrics initialized successfully")`}</CodeBlock>
+
+        <h3 id="metrics-endpoint" className="text-xl font-semibold mt-8 mb-4 text-gray-900">2. Metrics Endpoint</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Add this endpoint to your app.py:</strong>
+        </p>
+
+        <CodeBlock language="python">{`@app.route('/metrics', methods=['GET'])
+def prometheus_metrics():
+    """Prometheus metrics endpoint - industry standard format"""
+    try:
+        return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
+    except Exception as e:
+        logger.error(f"Error generating Prometheus metrics: {e}")
+        return jsonify({'error': 'Failed to generate metrics'}), 500`}</CodeBlock>
+
+        <h3 id="prometheus-logging" className="text-xl font-semibold mt-8 mb-4 text-gray-900">3. Prometheus Logging</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Add metrics tracking function:</strong>
+        </p>
+
+        <CodeBlock language="python">{`def update_prometheus_metrics(metrics_data):
+    """Update Prometheus metrics with new data"""
+    try:
+        business_id = metrics_data.get('business_id', 'unknown')
+
+        # Update request counter
+        ai_requests_total.labels(
+            business_id=business_id,
+            intent=metrics_data.get('intent_detected', 'unknown'),
+            response_type=metrics_data.get('response_type', 'unknown')
+        ).inc()
+
+        # Update response time histogram
+        if 'response_time_ms' in metrics_data:
+            response_time_seconds = metrics_data['response_time_ms'] / 1000.0
+            ai_response_time_seconds.labels(business_id=business_id).observe(response_time_seconds)
+
+        # Update token usage
+        if 'tokens_used' in metrics_data:
+            ai_tokens_used_total.labels(
+                business_id=business_id,
+                model=metrics_data.get('model_name', 'gemini-1.5-flash')
+            ).inc(metrics_data['tokens_used'])
+
+        logger.info(f"Successfully updated Prometheus metrics for business {business_id}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error updating Prometheus metrics: {e}")
+        return False`}</CodeBlock>
+
+        <h3 id="update-tracking" className="text-xl font-semibold mt-8 mb-4 text-gray-900">4. Update Tracking</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Add the main tracking endpoint:</strong>
+        </p>
+
+        <CodeBlock language="python">{`@app.route('/track', methods=['POST'])
+def track_metrics():
+    """Receive metrics from the Next.js chat application"""
+    try:
+        metrics_data = request.get_json()
+
+        if not metrics_data:
+            return jsonify({'error': 'No metrics data provided'}), 400
+
+        # Validate required fields
+        required_fields = ['business_id', 'response_time_ms', 'tokens_used']
+        for field in required_fields:
+            if field not in metrics_data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Update Prometheus metrics
+        prometheus_success = update_prometheus_metrics(metrics_data)
+
+        if prometheus_success:
+            logger.info(f"Successfully tracked metrics for business {metrics_data.get('business_id')}")
+            return jsonify({
+                'status': 'success',
+                'message': 'Metrics tracked successfully',
+                'timestamp': datetime.utcnow().isoformat()
+            })
+        else:
+            return jsonify({'error': 'Failed to store metrics'}), 500
+
+    except Exception as e:
+        logger.error(f"Error tracking metrics: {e}")
+        return jsonify({'error': 'Internal server error'}), 500`}</CodeBlock>
+
+        <h3 id="test-prometheus" className="text-xl font-semibold mt-8 mb-4 text-gray-900">5. Test Prometheus</h3>
+        
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Send test metrics:</strong>
+        </p>
+
+        <CodeBlock language="bash">{`curl -X POST http://localhost:5001/track \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "business_id": "test-business",
+    "response_time_ms": 1500,
+    "tokens_used": 150,
+    "intent_detected": "general",
+    "response_type": "text"
+  }'`}</CodeBlock>
+
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Check Prometheus metrics:</strong>
+        </p>
+
+        <CodeBlock language="bash">{`curl http://localhost:5001/metrics`}</CodeBlock>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-blue-800 mb-2">💡 What is Prometheus?</h4>
+          <p className="text-blue-700 mb-2">Prometheus is an industry-standard monitoring system that tracks:</p>
+          <ul className="text-blue-700 space-y-1">
+            <li>• How fast your AI responds (real-time metrics)</li>
+            <li>• How much each conversation costs</li>
+            <li>• Which conversations lead to appointments</li>
+            <li>• Performance trends over time</li>
+            <li>• System health and reliability</li>
+          </ul>
+        </div>
+
+        <h2 id="part-c" className="text-2xl font-bold mt-10 mb-6 text-gray-900">Part C: Next.js Integration</h2>
+        
+        <p className="mb-6 text-gray-700 leading-relaxed italic">
+          Now we'll modify your Next.js app to send performance data to your Flask service
+        </p>
+
+        <p className="mb-2 text-gray-700 leading-relaxed">
+          <strong>Add MLOps Service URL to your main .env file:</strong>
+        </p>
+        <CodeBlock language="env">{`# Add this line to your existing .env file
+MLOPS_SERVICE_URL=http://localhost:5001`}</CodeBlock>
+
+        <p className="mb-4 text-gray-700 leading-relaxed">
+          The metrics tracking is already implemented in your codebase! Check these files:
+        </p>
+
+        <ul className="mb-6 ml-6 space-y-2">
+          <li className="text-gray-700"><strong>lib/mlops-tracking.ts</strong> - Contains all the metrics tracking functions</li>
+          <li className="text-gray-700"><strong>app/api/chat/route.ts</strong> - Already calls trackMetrics() after each AI response</li>
+          <li className="text-gray-700"><strong>lib/database.ts</strong> - Contains createAIMetrics() function for database storage</li>
+        </ul>
+
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-green-800 mb-2">✅ Integration Complete!</h4>
+          <p className="text-green-700 mb-2">Your Next.js app automatically tracks:</p>
+          <ul className="text-green-700 space-y-1 text-sm">
+            <li>• Response times for each AI interaction</li>
+            <li>• Token usage and estimated API costs</li>
+            <li>• Intent detection and appointment requests</li>
+            <li>• Success rates and error tracking</li>
+          </ul>
+        </div>
+
+        <h2 id="troubleshooting" className="text-2xl font-bold mt-10 mb-6 text-gray-900">Troubleshooting</h2>
+
+        <div className="space-y-4 mb-6">
+          <div className="border-l-4 border-red-400 pl-4">
+            <p className="font-semibold text-gray-900">Flask service won't start:</p>
+            <p className="text-gray-700">Check that you're in the mlops-service directory and have activated the virtual environment</p>
+          </div>
+          
+          <div className="border-l-4 border-red-400 pl-4">
+            <p className="font-semibold text-gray-900">Metrics not appearing:</p>
+            <p className="text-gray-700">Ensure both Next.js (port 3000) and Flask (port 5001) services are running</p>
+          </div>
+          
+          <div className="border-l-4 border-red-400 pl-4">
+            <p className="font-semibold text-gray-900">Database connection errors:</p>
+            <p className="text-gray-700">Verify your DATABASE_URL is correctly copied from the main .env file</p>
+          </div>
         </div>
 
         <h2 className="text-2xl font-bold mt-10 mb-6 text-gray-900">Lab 2 Summary - What You Built</h2>
