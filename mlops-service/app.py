@@ -529,4 +529,4 @@ if __name__ == '__main__':
     print("")
     
     # Run Flask app in development mode
-    app.run(host='0.0.0.0', port=service_port, debug=True)"# CI/CD Pipeline Test" 
+    app.run(host='0.0.0.0', port=service_port, debug=True)" # CI/CD Pipeline Test" 
