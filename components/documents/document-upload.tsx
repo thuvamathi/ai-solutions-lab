@@ -18,7 +18,7 @@ interface UploadedFile {
 }
 
 interface DocumentUploadProps {
-  businessId: string
+  businessId?: string
   onUploadComplete?: (files: UploadedFile[]) => void
 }
 
