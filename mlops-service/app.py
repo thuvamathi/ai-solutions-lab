@@ -25,6 +25,10 @@ import logging
 import requests
 import urllib.parse
 from typing import Dict, Any, Optional
+from dotenv import load_dotenv
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 # Prometheus imports
 from prometheus_client import Counter, Histogram, Gauge, Info, start_http_server, generate_latest, CONTENT_TYPE_LATEST
@@ -36,6 +40,8 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for Next.js integration
+
+load_dotenv()
 
 # Database connection configuration
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -113,7 +119,7 @@ def execute_sql(query: str, params: tuple = None) -> Optional[Dict]:
     """
     Execute SQL query using HTTP API (simplified for cross-platform compatibility)
     
-    Args:
+    Args:Metrics table created successful
         query: SQL query string
         params: Query parameters
         
@@ -236,36 +242,34 @@ def track_metrics():
         JSON response confirming metrics were tracked
     """
     try:
-        # Get metrics data from request
         metrics_data = request.get_json()
-        
+
         if not metrics_data:
             return jsonify({'error': 'No metrics data provided'}), 400
-        
+
         # Validate required fields
         required_fields = ['business_id', 'response_time_ms', 'tokens_used']
         for field in required_fields:
             if field not in metrics_data:
                 return jsonify({'error': f'Missing required field: {field}'}), 400
-        
-        # Update Prometheus metrics
-        update_prometheus_metrics(metrics_data)
-        
-        # Store metrics in database for historical analysis
+
+        # Update Prometheus metrics first
+        prometheus_success = update_prometheus_metrics(metrics_data)
+
+        # Store in database
         db_success = store_metrics_in_db(metrics_data)
-        
-        if db_success:
+
+        if db_success and prometheus_success:
             logger.info(f"Successfully tracked metrics for business {metrics_data.get('business_id')}")
             return jsonify({
                 'status': 'success',
                 'message': 'Metrics tracked successfully',
-                'prometheus_updated': True,
-                'database_stored': True,
+                'prometheus_updated': prometheus_success,
                 'timestamp': datetime.utcnow().isoformat()
             })
         else:
-            return jsonify({'error': 'Failed to store metrics in database'}), 500
-            
+            return jsonify({'error': 'Failed to store metrics'}), 500
+
     except Exception as e:
         logger.error(f"Error tracking metrics: {e}")
         return jsonify({'error': 'Internal server error'}), 500

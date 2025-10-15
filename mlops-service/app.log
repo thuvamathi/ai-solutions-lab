@@ -1,0 +1,38 @@
+INFO:__main__:Metrics storage initialized successfully
+INFO:__main__:Rebuilding Prometheus metrics from database...
+INFO:__main__:Successfully rebuilt Prometheus metrics from database
+🚀 Starting MLOps Service with Prometheus
+=========================================
+📊 Monitoring: Prometheus
+💾 Database: Simplified (cross-platform)
+🌐 Service Port: 5001
+🌐 Endpoints:
+   - GET  http://localhost:5001/ (Dashboard)
+   - GET  http://localhost:5001/health
+   - GET  http://localhost:5001/metrics (Prometheus)
+   - POST http://localhost:5001/track
+   - GET  http://localhost:5001/analytics/<business_id>
+
+🎯 Quick Start:
+   📊 View Dashboard: http://localhost:5001/
+   📈 View Raw Metrics: http://localhost:5001/metrics
+
+📈 Prometheus metrics server started on port 8001
+📊 Metrics available at: http://localhost:8001/metrics
+
+🔄 Press Ctrl+C to stop all services
+
+ * Serving Flask app 'app'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://10.28.69.114:5001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with watchdog (windowsapi)
+INFO:__main__:Metrics storage initialized successfully
+INFO:__main__:Rebuilding Prometheus metrics from database...
+INFO:__main__:Successfully rebuilt Prometheus metrics from database
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 533-390-324
+^C
