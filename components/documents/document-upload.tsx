@@ -91,9 +91,9 @@ export function DocumentUpload({ businessId, onUploadComplete }: DocumentUploadP
         formData.append('file_name', file.name)
         formData.append('file_type', file.type)
         formData.append('file_size', file.size.toString())
-        formData.append('content', extractedText)
+        formData.append('content', extractedText || '')
       }
-      formData.append('business_id', businessId)
+      formData.append('business_id', businessId || '')
 
       updateProgress(60, "uploading")
 
