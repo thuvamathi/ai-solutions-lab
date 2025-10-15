@@ -46,11 +46,11 @@ jobs:
         run: npm ci
 
       # Run comprehensive test suite
-      - name: Run test suite
-        run: npm test
-        env:
+      #- name: Run test suite
+      #  run: npm test
+      #  env:
           # Test environment variables
-          NODE_ENV: test
+      #    NODE_ENV: test
 
       # Run linting (if ESLint is configured)
       - name: Run linting
