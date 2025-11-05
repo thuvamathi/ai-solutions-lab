@@ -495,7 +495,7 @@ def get_analytics(business_id: str):
 
 if __name__ == '__main__':
     # Get port from environment or use default
-    service_port = int(os.getenv('SERVICE_PORT', '5001'))
+    service_port = int(os.getenv('SERVICE_PORT', '5000'))
     prometheus_port = int(os.getenv('PROMETHEUS_PORT', '8001'))
     
     print("🚀 Starting MLOps Service with Prometheus")
