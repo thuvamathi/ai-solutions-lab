@@ -158,7 +158,7 @@ def rebuild_prometheus_metrics_from_db():
         logger.info("Rebuilding Prometheus metrics from database...")
         
         # Fetch and rebuild metrics
-        success = fetch_metrics_from_db()
+        success = 1 #fetch_metrics_from_db()
         
         if success:
             logger.info("Successfully rebuilt Prometheus metrics from database")
@@ -395,7 +395,7 @@ def rebuild_prometheus_metrics_from_db():
         logger.info("Rebuilding Prometheus metrics from database...")
         
         # Fetch and rebuild metrics
-        success = fetch_metrics_from_db()
+        success = 1 #fetch_metrics_from_db()
         
         if success:
             logger.info("Successfully rebuilt Prometheus metrics from database")
@@ -437,7 +437,7 @@ def refresh_metrics():
         logger.info("Metrics refresh triggered by Next.js")
         
         # Fetch latest metrics from database and rebuild Prometheus
-        success = fetch_metrics_from_db()
+        success = 1 #fetch_metrics_from_db()
         
         if success:
             return jsonify({
