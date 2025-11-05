@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose port 5001 (Flask runs on this port)
-EXPOSE 5001
+EXPOSE 5000
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
